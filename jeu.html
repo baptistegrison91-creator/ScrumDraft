@@ -7,7 +7,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <style>html,body{margin:0;padding:0;}#back-link{position:fixed;top:14px;left:14px;z-index:100;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:#F4EFE2;background:rgba(15,36,23,0.55);backdrop-filter:blur(4px);text-decoration:none;padding:7px 12px;border-radius:7px;border:1px solid rgba(201,168,95,0.35);}#back-link:hover{border-color:#C9A85F;}</style>
 </head><body>
-<a id="back-link" href="index.html">← ScrumDraft</a><div style="position:fixed;bottom:8px;right:10px;font-family:sans-serif;font-size:10px;color:rgba(244,239,226,0.35);z-index:100;">v2026.06.23</div>
+<a id="back-link" href="index.html">← ScrumDraft</a>
+<div style="position:fixed;bottom:8px;right:10px;font-family:sans-serif;font-size:10px;color:rgba(244,239,226,0.35);z-index:100;">v2026.06.23</div>
 <div id="root"></div>
 <script>/**
  * @license React
@@ -520,7 +521,7 @@ const TEAMS = {
     annee: 2003,
     parcours: 'demi',
     couleur: '#1b3a8f',
-    joueurs: [['Raphaël Ibañez', 81, ['Talonneur']], ['Jean-Jacques Crenca', 80, ['Pilier']], ['Sylvain Marconnet', 80, ['Pilier']], ['Fabien Pelous', 84, ['2e ligne']], ['Jérôme Thion', 79, ['2e ligne']], ['Serge Betsen', 84, ['Flanker']], ['Olivier Magne', 85, ['Flanker']], ['Imanol Harinordoquy', 83, ['N°8']], ['Fabien Galthié', 85, ['Mêlée']], ['Frédéric Michalak', 85, ['Ouverture', 'Arrière']], ['Christophe Dominici', 83, ['Ailier']], ['Yannick Jauzion', 85, ['Centre']], ['Damien Traille', 80, ['Centre', 'Arrière']], ['Aurélien Rougerie', 82, ['Ailier', 'Centre']], ['Nicolas Brusque', 79, ['Arrière']]]
+    joueurs: [['Raphaël Ibañez', 81, ['Talonneur']], ['Jean-Jacques Crenca', 80, ['Pilier']], ['Sylvain Marconnet', 80, ['Pilier']], ['Fabien Pelous', 84, ['2e ligne']], ['Jérôme Thion', 79, ['2e ligne']], ['Serge Betsen', 84, ['Flanker']], ['Olivier Magne', 85, ['Flanker']], ['Imanol Harinordoquy', 83, ['N°8']], ['Fabien Galthié', 87, ['Mêlée']], ['Frédéric Michalak', 85, ['Ouverture', 'Arrière']], ['Christophe Dominici', 83, ['Ailier']], ['Yannick Jauzion', 85, ['Centre']], ['Damien Traille', 80, ['Centre', 'Arrière']], ['Aurélien Rougerie', 82, ['Ailier', 'Centre']], ['Nicolas Brusque', 79, ['Arrière']]]
   },
   RSA03: {
     nom: 'Afrique du Sud',
@@ -1129,7 +1130,7 @@ const TEAMS = {
     annee: 1991,
     parcours: 'quart',
     couleur: '#002395',
-    joueurs: [['Louis Armary', 77, ['Pilier']], ['Pascal Ondarts', 79, ['Pilier']], ['Philippe Marocco', 75, ['Talonneur']], ['Jean Condom', 77, ['2e ligne']], ['Alain Lorieux', 77, ['2e ligne']], ['Laurent Cabannes', 80, ['Flanker']], ['Marc Cécillon', 77, ['Flanker']], ['Abdel Benazzi', 80, ['N°8']], ['Pierre Berbizier', 81, ['Mêlée']], ['Didier Camberabero', 82, ['Ouverture']], ['Philippe Saint-André', 79, ['Ailier']], ['Franck Mesnel', 75, ['Centre']], ['Philippe Sella', 89, ['Centre']], ['Jean-Baptiste Lafond', 76, ['Ailier']], ['Serge Blanco', 90, ['Arrière']]]
+    joueurs: [['Louis Armary', 77, ['Pilier']], ['Pascal Ondarts', 79, ['Pilier']], ['Philippe Marocco', 75, ['Talonneur']], ['Jean Condom', 77, ['2e ligne']], ['Olivier Roumat', 81, ['2e ligne']], ['Laurent Cabannes', 80, ['Flanker']], ['Marc Cécillon', 77, ['N°8']], ['Eric Champ', 79, ['Flanker']], ['Fabien Galthié', 74, ['Mêlée']], ['Thierry Lacroix', 80, ['Ouverture']], ['Philippe Saint-André', 79, ['Ailier']], ['Franck Mesnel', 75, ['Centre']], ['Philippe Sella', 89, ['Centre']], ['Jean-Baptiste Lafond', 76, ['Ailier']], ['Serge Blanco', 90, ['Arrière']]]
   },
   IRL91: {
     nom: 'Irlande',
@@ -1495,7 +1496,7 @@ function drawOpponent(band, usedSet) {
 // écrasait le signal. Ici, +5 -> ~65%, +10 -> ~78%, +20 -> ~92% : chaque match
 // reste incertain, même en cas d'avance confortable.
 const SKILL_SCALE = 5;
-function simulateMatch(myAvg, oppAvg) {
+function simulateMatch(myAvg, oppAvg, maxMargin = 40) {
   const diff = myAvg - oppAvg;
   const pWin = 1 / (1 + Math.exp(-diff / SKILL_SCALE));
   const win = Math.random() < pWin;
@@ -1503,7 +1504,7 @@ function simulateMatch(myAvg, oppAvg) {
   // Résultat logique = le favori gagne
   // Upset = toujours très serré (1 à 3 pts max)
   const expectedResult = win && diff > 0 || !win && diff < 0;
-  const margin = expectedResult ? Math.round(Math.min(40, Math.max(3, Math.abs(diff) * 0.9 + Math.random() * 14))) : Math.round(1 + Math.random() * 2);
+  const margin = expectedResult ? Math.round(Math.min(maxMargin, Math.max(3, Math.abs(diff) * 0.9 + Math.random() * 14))) : Math.round(1 + Math.random() * 2);
   let myScore, oppScore;
   if (win) {
     oppScore = base;
@@ -1710,7 +1711,9 @@ function App() {
   const [legendPhase, setLegendPhase] = useState(null); // null | 'active' | 'over'
   const [legendIndex, setLegendIndex] = useState(0); // 0-9 : quel champion
   const [legendLog, setLegendLog] = useState([]);
-  const [legendResult, setLegendResult] = useState(null); // null | 'champion' | number (arrêté au match N)
+  const [legendResult, setLegendResult] = useState(null); // null | 'champion' | number
+  const [legendDone, setLegendDone] = useState(false); // une seule chance par XV
+  const [cdmRetryUsed, setCdmRetryUsed] = useState(false); // un seul retry CDM autorisé (arrêté au match N)
 
   // Chargement de la partie sauvegardée (une seule fois, au montage)
   useEffect(() => {
@@ -1735,6 +1738,8 @@ function App() {
           if (typeof data.legendIndex === 'number') setLegendIndex(data.legendIndex);
           if (data.legendLog) setLegendLog(data.legendLog);
           if (data.legendResult !== undefined) setLegendResult(data.legendResult);
+          if (data.legendDone !== undefined) setLegendDone(data.legendDone);
+          if (data.cdmRetryUsed !== undefined) setCdmRetryUsed(data.cdmRetryUsed);
         }
       } catch {
         // pas de partie sauvegardée — on démarre une partie neuve, c'est normal
@@ -1764,7 +1769,9 @@ function App() {
       legendPhase,
       legendIndex,
       legendLog,
-      legendResult
+      legendResult,
+      legendDone,
+      cdmRetryUsed
     };
     window.storage.set(SAVE_KEY, JSON.stringify(payload), false).catch(() => {});
   }, [slots, used, usedNames, team, turn, changesLeft, done, loaded, simPhase, matchLog, currentOpponent, usedOpponents, tournamentResult, legendPhase, legendIndex, legendLog, legendResult]);
@@ -1875,6 +1882,8 @@ function App() {
     setLegendIndex(0);
     setLegendLog([]);
     setLegendResult(null);
+    setLegendDone(false);
+    setCdmRetryUsed(false);
   }
   function startTournament() {
     const first = drawOpponent(POOL_BAND, new Set());
@@ -1887,7 +1896,12 @@ function App() {
 
   // Relance uniquement la simulation — garde le XV déjà composé
   function retryTournament() {
+    setCdmRetryUsed(true);
     startTournament();
+    setLegendPhase(null);
+    setLegendLog([]);
+    setLegendResult(null);
+    // legendDone reste true si les Légendes ont déjà été jouées avec ce XV
   }
 
   // Bonus de difficulté par phase — un adversaire en quart/demi/finale est
@@ -1974,7 +1988,7 @@ function App() {
   function playLegendMatch() {
     const oppKey = LEGEND_CHAMPIONS[legendIndex];
     const oppAvg = TEAM_AVG[oppKey];
-    const result = simulateMatch(avg, oppAvg);
+    const result = simulateMatch(avg, oppAvg, 12);
     const entry = {
       oppKey,
       index: legendIndex,
@@ -1987,6 +2001,7 @@ function App() {
     if (legendIndex >= LEGEND_CHAMPIONS.length - 1) {
       // Tous les 10 joués — score = nombre de victoires
       setLegendPhase('over');
+      setLegendDone(true);
       setLegendResult(newLog.filter(m => m.win).length);
     } else {
       setLegendIndex(legendIndex + 1);
@@ -2876,7 +2891,7 @@ function App() {
     style: {
       marginTop: 12
     }
-  }, renderMatchLog()), tournamentResult === 'champion' && legendPhase === null && /*#__PURE__*/React.createElement("div", {
+  }, renderMatchLog()), tournamentResult === 'champion' && legendPhase === null && !legendDone && /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 16,
       background: `linear-gradient(160deg,${C.fir2},${C.firDeep})`,
@@ -3162,7 +3177,7 @@ function App() {
       gap: 8,
       marginTop: 12
     }
-  }, /*#__PURE__*/React.createElement("button", {
+  }, tournamentResult !== 'champion' && !cdmRetryUsed && /*#__PURE__*/React.createElement("button", {
     onClick: retryTournament,
     style: {
       flex: 1,
