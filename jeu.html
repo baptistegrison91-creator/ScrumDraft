@@ -1493,17 +1493,16 @@ function drawOpponent(band, usedSet) {
 // Avec l'ancienne variance, +5 de moyenne donnait ~87% de victoire : le hasard
 // écrasait le signal. Ici, +5 -> ~65%, +10 -> ~78%, +20 -> ~92% : chaque match
 // reste incertain, même en cas d'avance confortable.
-const SKILL_SCALE = 8;
+const SKILL_SCALE = 5;
 function simulateMatch(myAvg, oppAvg) {
   const diff = myAvg - oppAvg;
   const pWin = 1 / (1 + Math.exp(-diff / SKILL_SCALE));
   const win = Math.random() < pWin;
   const base = 14 + Math.floor(Math.random() * 10);
-  // Résultat attendu = favori gagne OU outsider perd
-  // Dans ce cas, marge proportionnelle à l'écart réel.
-  // Upset = toujours serré (3-10 pts) — les surprises ne sont jamais des déroutes.
+  // Résultat logique = le favori gagne
+  // Upset = toujours très serré (1 à 3 pts max)
   const expectedResult = win && diff > 0 || !win && diff < 0;
-  const margin = expectedResult ? Math.round(Math.min(40, Math.max(3, Math.abs(diff) * 0.9 + Math.random() * 14))) : Math.round(3 + Math.random() * 8);
+  const margin = expectedResult ? Math.round(Math.min(40, Math.max(3, Math.abs(diff) * 0.9 + Math.random() * 14))) : Math.round(1 + Math.random() * 2);
   let myScore, oppScore;
   if (win) {
     oppScore = base;
@@ -1973,7 +1972,7 @@ function App() {
   }
   function playLegendMatch() {
     const oppKey = LEGEND_CHAMPIONS[legendIndex];
-    const oppAvg = TEAM_AVG[oppKey] + 6;
+    const oppAvg = TEAM_AVG[oppKey];
     const result = simulateMatch(avg, oppAvg);
     const entry = {
       oppKey,
