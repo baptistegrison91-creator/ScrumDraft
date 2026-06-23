@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ScrumDraft — Draft de légende</title>
+<meta name="description" content="Un tirage. Une nation. Une Coupe du Monde. 123 squads, 1845 joueurs, 1987–2023.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;0,600;0,700;1,400;1,500;1,600&family=Inter:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --fir:#16301f;--fir2:#1d3a2c;--fird:#0f2417;
+  --camel:#c9a85f;--camlt:#e0c789;
+  --sand:#d8c9a0;--cream:#f4efe2;--cream2:#ece4d0;
+  --ink:#211f17;--inks:#4a4636;--line:#e6dec8;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Inter',sans-serif;background:var(--fird);color:var(--cream);}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:50;background:rgba(15,36,23,.94);backdrop-filter:blur(10px);border-bottom:1px solid rgba(201,168,95,.18);}
+.nav-in{max-width:1160px;margin:0 auto;padding:15px 32px;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-family:'Cormorant Garamond';font-weight:700;font-size:22px;color:var(--cream);text-decoration:none;letter-spacing:.01em;}
+.logo b{color:var(--camel);}
+.play-btn{background:var(--camel);color:var(--fir);padding:10px 22px;border-radius:6px;font-weight:700;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;text-decoration:none;transition:background .18s;}
+.play-btn:hover{background:var(--camlt);}
+
+/* HERO */
+.hero{
+  min-height:88vh;display:flex;flex-direction:column;justify-content:center;
+  padding:80px 32px 56px;text-align:center;
+  background:radial-gradient(ellipse 100% 80% at 50% -10%, var(--fir2) 0%, var(--fird) 65%);
+  position:relative;overflow:hidden;
+}
+.hero::after{
+  content:'';position:absolute;
+  bottom:-1px;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,168,95,.25),transparent);
+}
+.h-era{
+  font-family:'Spectral';font-style:italic;font-size:15px;
+  color:var(--camel);letter-spacing:.1em;margin-bottom:28px;
+  opacity:.9;
+}
+.h1{
+  font-family:'Cormorant Garamond';font-weight:700;
+  font-size:clamp(64px,12vw,128px);
+  line-height:.88;letter-spacing:-.02em;
+}
+.h1 em{color:var(--camel);font-style:italic;font-weight:500;}
+.h-lead{
+  font-family:'Spectral';font-size:clamp(16px,2.2vw,19px);
+  color:var(--sand);max-width:480px;margin:30px auto 0;
+  line-height:1.65;opacity:.88;
+}
+.h-cta{
+  display:inline-block;margin-top:46px;
+  background:var(--camel);color:var(--fir);
+  padding:17px 40px;border-radius:7px;
+  font-weight:700;font-size:14px;letter-spacing:.05em;
+  text-decoration:none;text-transform:uppercase;
+  transition:background .18s,transform .15s;
+}
+.h-cta:hover{background:var(--camlt);transform:translateY(-2px);}
+
+/* STRIP */
+.strip{
+  display:flex;justify-content:center;
+  margin-top:64px;
+  border-top:1px solid rgba(201,168,95,.14);
+  border-bottom:1px solid rgba(201,168,95,.14);
+}
+.s-item{
+  padding:20px 0;text-align:center;
+  flex:1;max-width:180px;
+  border-right:1px solid rgba(201,168,95,.12);
+}
+.s-item:last-child{border-right:none;}
+.s-n{font-family:'Cormorant Garamond';font-weight:700;font-size:34px;color:var(--camel);line-height:1;}
+.s-l{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--sand);opacity:.6;margin-top:5px;}
+
+/* EDITIONS */
+.editions{background:var(--cream);color:var(--ink);padding:88px 32px;}
+.eds-in{max-width:1060px;margin:0 auto;}
+.eds-header{margin-bottom:52px;}
+.eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--camel);font-weight:700;margin-bottom:10px;}
+.eds-h2{
+  font-family:'Cormorant Garamond';font-weight:700;
+  font-size:clamp(30px,4.5vw,46px);color:var(--ink);line-height:1.05;
+}
+.eds-sub{font-family:'Spectral';font-style:italic;font-size:16px;color:var(--inks);margin-top:10px;}
+
+.eds-grid{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line);}
+@media(max-width:680px){.eds-grid{grid-template-columns:1fr;}}
+
+.ed{
+  display:grid;grid-template-columns:72px 1fr;gap:0 18px;
+  padding:26px 0;border-bottom:1px solid var(--line);
+  align-items:start;
+}
+.eds-grid .ed:nth-child(odd){padding-right:44px;}
+.eds-grid .ed:nth-child(even){padding-left:44px;border-left:1px solid var(--line);}
+@media(max-width:680px){
+  .eds-grid .ed:nth-child(odd){padding-right:0;}
+  .eds-grid .ed:nth-child(even){padding-left:0;border-left:none;}
+}
+
+.ed-yr{
+  font-family:'Cormorant Garamond';font-weight:700;
+  font-size:32px;color:var(--camel);line-height:1;padding-top:2px;
+}
+.ed-nat{font-family:'Cormorant Garamond';font-weight:700;font-size:17px;color:var(--ink);line-height:1.2;}
+.ed-res{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--camel);font-weight:600;margin-top:3px;}
+.ed-txt{font-family:'Spectral';font-style:italic;font-size:14px;color:var(--inks);margin-top:6px;line-height:1.5;}
+
+/* MANIFESTO */
+.mani{
+  background:var(--fir);padding:88px 32px;text-align:center;
+  border-top:1px solid rgba(201,168,95,.1);
+  border-bottom:1px solid rgba(201,168,95,.1);
+}
+.mani-q{
+  font-family:'Cormorant Garamond';font-weight:600;font-style:italic;
+  font-size:clamp(22px,3.8vw,36px);line-height:1.3;color:var(--cream);
+  max-width:640px;margin:0 auto;
+}
+.mani-q em{color:var(--camel);font-style:normal;}
+.mani-s{font-family:'Spectral';font-style:italic;font-size:14.5px;color:var(--sand);opacity:.7;margin-top:22px;}
+
+/* FINAL CTA */
+.final{background:var(--fird);padding:96px 32px;text-align:center;}
+.final-h{
+  font-family:'Cormorant Garamond';font-weight:700;
+  font-size:clamp(38px,6.5vw,68px);line-height:.95;
+}
+.final-h em{color:var(--camel);font-style:italic;}
+.final-p{font-family:'Spectral';font-size:17px;color:var(--sand);max-width:400px;margin:20px auto 40px;line-height:1.6;opacity:.85;}
+.final-btn{
+  display:inline-block;background:var(--camel);color:var(--fir);
+  padding:17px 42px;border-radius:7px;
+  font-weight:700;font-size:14px;letter-spacing:.05em;
+  text-decoration:none;text-transform:uppercase;
+  transition:background .18s,transform .15s;
+}
+.final-btn:hover{background:var(--camlt);transform:translateY(-2px);}
+
+/* FOOTER */
+footer{background:var(--fird);padding:32px;text-align:center;border-top:1px solid rgba(201,168,95,.1);}
+.f-logo{font-family:'Cormorant Garamond';font-weight:700;font-size:17px;color:var(--cream);margin-bottom:8px;}
+.f-logo b{color:var(--camel);}
+.f-copy{font-size:11.5px;color:var(--sand);opacity:.45;letter-spacing:.06em;}
+
+/* ── LEGENDS TEASER ── */
+.legends-teaser{
+  background:var(--fird);
+  padding:56px 32px;
+  border-top:1px solid rgba(201,168,95,.12);
+  border-bottom:1px solid rgba(201,168,95,.12);
+}
+.leg-in{
+  max-width:480px;margin:0 auto;text-align:center;
+  background:rgba(15,36,23,.6);
+  border:1px solid rgba(201,168,95,.35);
+  border-radius:12px;
+  padding:32px 28px;
+  position:relative;
+}
+.leg-lock{
+  display:flex;justify-content:center;margin-bottom:16px;
+  opacity:.85;
+}
+.leg-title{
+  font-family:'Cormorant Garamond';font-weight:700;
+  font-size:clamp(26px,5vw,36px);color:var(--camel);
+  letter-spacing:.01em;line-height:1.05;
+  margin-bottom:10px;
+}
+.leg-sub{
+  font-family:'Spectral';font-style:italic;
+  font-size:15px;color:var(--sand);opacity:.75;
+  margin-bottom:14px;letter-spacing:.02em;
+}
+.leg-desc{
+  font-family:'Spectral';font-size:13px;
+  color:var(--sand);opacity:.5;line-height:1.6;
+  letter-spacing:.04em;text-transform:uppercase;
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-in">
+    <a class="logo" href="/">Scrum<b>Draft</b></a>
+    <a class="play-btn" href="jeu.html">Jouer</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="h-era">1987 – 2023 · Coupe du Monde de Rugby</div>
+  <h1 class="h1">Un tirage,<br><em>crée ta légende</em></h1>
+  <p class="h-lead">Un tirage. Une nation. Une Coupe du Monde.</p>
+  <a href="jeu.html" class="h-cta">Commence ta draft</a>
+  <div class="strip">
+    <div class="s-item"><div class="s-n">148</div><div class="s-l">Squads</div></div>
+    <div class="s-item"><div class="s-n">1 845</div><div class="s-l">Joueurs</div></div>
+    <div class="s-item"><div class="s-n">10</div><div class="s-l">Éditions</div></div>
+    <div class="s-item"><div class="s-n">33</div><div class="s-l">Nations</div></div>
+  </div>
+</header>
+
+<section class="legends-teaser">
+  <div class="leg-in">
+    <div class="leg-lock">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <rect x="4" y="8" width="10" height="8" rx="2" stroke="#c9a85f" stroke-width="1.3"/>
+        <path d="M6 8V5.5a3 3 0 0 1 6 0V8" stroke="#c9a85f" stroke-width="1.3" stroke-linecap="round"/>
+        <circle cx="9" cy="12" r="1.2" fill="#c9a85f"/>
+      </svg>
+    </div>
+    <div class="leg-title">Tournoi des Légendes</div>
+    <div class="leg-sub">Réservé aux champions du Monde.</div>
+    <div class="leg-desc">10 équipes. 37 ans d'histoire.<br>Un seul Grand Chelem.</div>
+  </div>
+</section>
+
+<section class="editions">
+  <div class="eds-in">
+    <div class="eds-header">
+      <div class="eyebrow">Ce qui t'attend</div>
+      <h2 class="eds-h2">Des squads qui ont<br>écrit l'Histoire</h2>
+      <p class="eds-sub">Un aperçu. Cent quarante-huit squads t'attendent dans le jeu.</p>
+    </div>
+    <div class="eds-grid">
+<div class="ed">
+        <div class="ed-yr">1991</div>
+        <div>
+          <div class="ed-nat">Australie</div>
+          <div class="ed-res">Champion du Monde</div>
+          <div class="ed-txt">Campese dans tous ses éclats. Farr-Jones, Lynagh. L'apogée.</div>
+        </div>
+      </div>
+<div class="ed">
+        <div class="ed-yr">1995</div>
+        <div>
+          <div class="ed-nat">Afrique du Sud</div>
+          <div class="ed-res">Champion du Monde</div>
+          <div class="ed-txt">Mandela en jersey 6. Pienaar, Stransky, le drop. La renaissance d'un peuple.</div>
+        </div>
+      </div>
+<div class="ed">
+        <div class="ed-yr">1995</div>
+        <div>
+          <div class="ed-nat">Nouvelle-Zélande</div>
+          <div class="ed-res">Finaliste</div>
+          <div class="ed-txt">Lomu, 20 ans. Quatre essais contre l'Angleterre en demi. Intouchable.</div>
+        </div>
+      </div>
+<div class="ed">
+        <div class="ed-yr">1999</div>
+        <div>
+          <div class="ed-nat">Australie</div>
+          <div class="ed-res">Champion du Monde</div>
+          <div class="ed-txt">Horan, Gregan, Larkham. Le doublé. L'apogée silencieuse.</div>
+        </div>
+      </div>
+<div class="ed">
+        <div class="ed-yr">2003</div>
+        <div>
+          <div class="ed-nat">Angleterre</div>
+          <div class="ed-res">Champion du Monde</div>
+          <div class="ed-txt">Wilkinson. Le drop. 100 secondes qui font une légende.</div>
+        </div>
+      </div>
+<div class="ed">
+        <div class="ed-yr">2007</div>
+        <div>
+          <div class="ed-nat">France</div>
+          <div class="ed-res">Demi-finaliste</div>
+          <div class="ed-txt">Dusautoir face aux All Blacks. 38 plaquages. Un miracle à Cardiff.</div>
+        </div>
+      </div>
+<div class="ed">
+        <div class="ed-yr">2007</div>
+        <div>
+          <div class="ed-nat">Afrique du Sud</div>
+          <div class="ed-res">Champion du Monde</div>
+          <div class="ed-txt">Habana, 8 essais. La plus grande défense de l'Histoire du tournoi.</div>
+        </div>
+      </div>
+<div class="ed">
+        <div class="ed-yr">2011</div>
+        <div>
+          <div class="ed-nat">France</div>
+          <div class="ed-res">Finaliste</div>
+          <div class="ed-txt">Dusautoir, encore. MOTM d'une finale perdue d'un point.</div>
+        </div>
+      </div>
+<div class="ed">
+        <div class="ed-yr">2015</div>
+        <div>
+          <div class="ed-nat">Nouvelle-Zélande</div>
+          <div class="ed-res">Champion du Monde</div>
+          <div class="ed-txt">Carter 93. McCaw, Retallick, Read. La plus grande équipe de tous les temps.</div>
+        </div>
+      </div>
+<div class="ed">
+        <div class="ed-yr">2019</div>
+        <div>
+          <div class="ed-nat">Afrique du Sud</div>
+          <div class="ed-res">Champion du Monde</div>
+          <div class="ed-txt">Kolisi capitaine. Kolbe sur son aile. Du Toit partout. Le titre du peuple.</div>
+        </div>
+      </div>
+<div class="ed">
+        <div class="ed-yr">2023</div>
+        <div>
+          <div class="ed-nat">France</div>
+          <div class="ed-res">Quart de finaliste</div>
+          <div class="ed-txt">Dupont. 80 000 au Stade de France. Le pays entier retient son souffle.</div>
+        </div>
+      </div>
+<div class="ed">
+        <div class="ed-yr">2023</div>
+        <div>
+          <div class="ed-nat">Irlande</div>
+          <div class="ed-res">Quart de finaliste</div>
+          <div class="ed-txt">Sexton, Furlong, van der Flier. La meilleure équipe du monde. Sorti en quart.</div>
+        </div>
+      </div>
+</div>
+  </div>
+</section>
+
+<section class="mani">
+  <p class="mani-q">Des légendes, il y en a pour chaque poste.<br><em>Les tiennes, c'est toi seul qui les rappelles.</em></p>
+  <p class="mani-s">Chaque case vide est une décision. Chaque nom, un hommage.</p>
+</section>
+
+<section class="final">
+  <h2 class="final-h">Un tirage.<br><em>Une légende.</em></h2>
+  <p class="final-p">Pas de compte. Un tirage au sort, un XV à bâtir, et l'Histoire à réécrire.</p>
+  <a href="jeu.html" class="final-btn">Commence ta draft</a>
+</section>
+
+<footer>
+  <div class="f-logo">Scrum<b>Draft</b></div>
+  <div class="f-copy">1987 – 2023 · 148 squads · 10 Coupes du Monde</div>
+</footer>
+
+</body>
+</html>
