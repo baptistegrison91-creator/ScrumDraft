@@ -187,6 +187,43 @@ footer{background:var(--fird);padding:32px;text-align:center;border-top:1px soli
   color:var(--sand);opacity:.5;line-height:1.6;
   letter-spacing:.04em;text-transform:uppercase;
 }
+
+/* ── HALL OF FAME ── */
+.hof{background:var(--ink);color:var(--cream);padding:72px 32px;}
+.hof-in{max-width:640px;margin:0 auto;}
+.hof-title{font-family:'Cormorant Garamond';font-weight:700;font-size:clamp(28px,4.5vw,40px);
+  color:var(--camel);margin-bottom:8px;line-height:1.1;}
+.hof-sub{font-family:'Spectral';font-style:italic;font-size:15px;color:var(--sand);
+  opacity:.7;margin-bottom:32px;}
+.hof-list{display:flex;flex-direction:column;}
+.hof-entry{border-bottom:1px solid rgba(201,168,95,0.12);}
+.hof-header{display:flex;align-items:center;justify-content:space-between;
+  padding:14px 0;cursor:pointer;user-select:none;}
+.hof-header:hover .hof-name{color:var(--camel);}
+.hof-left{display:flex;align-items:baseline;gap:12px;}
+.hof-name{font-family:'Cormorant Garamond';font-weight:700;font-size:22px;
+  color:var(--cream);transition:color .15s;}
+.hof-avg{font-family:'Cormorant Garamond';font-weight:600;font-size:16px;color:var(--camel);}
+.hof-right{display:flex;align-items:center;gap:10px;}
+.hof-date{font-family:'Inter';font-size:10px;color:var(--sand);opacity:.5;
+  letter-spacing:.08em;}
+.hof-arrow{font-size:11px;color:var(--camel);opacity:.6;transition:transform .2s;}
+.hof-arrow.open{transform:rotate(90deg);}
+.hof-body{display:none;padding:0 0 16px;}
+.hof-body.open{display:block;}
+.hof-xv{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;margin-bottom:12px;}
+.hof-player{display:flex;align-items:center;justify-content:space-between;
+  font-family:'Inter';font-size:11px;padding:3px 0;}
+.hof-player-pos{color:var(--sand);opacity:.5;font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;width:24px;flex-shrink:0;}
+.hof-player-name{flex:1;color:var(--cream);margin:0 6px;}
+.hof-player-note{color:var(--camel);font-weight:600;}
+.hof-empty{font-family:'Spectral';font-style:italic;font-size:14px;
+  color:var(--sand);opacity:.5;padding:20px 0;text-align:center;}
+.hof-loading{font-family:'Inter';font-size:12px;color:var(--sand);opacity:.4;
+  padding:20px 0;text-align:center;}
+.hof-admin-btn{background:#8B3A3A;color:#fff;border:none;border-radius:4px;
+  padding:3px 8px;cursor:pointer;font-size:10px;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -223,6 +260,17 @@ footer{background:var(--fird);padding:32px;text-align:center;border-top:1px soli
     <div class="leg-title">Tournoi des Légendes</div>
     <div class="leg-sub">Réservé aux champions du Monde.</div>
     <div class="leg-desc">10 équipes. 37 ans d'histoire.<br>Un seul Grand Chelem.</div>
+  </div>
+</section>
+
+<section class="hof" id="hof">
+  <div class="hof-in">
+    <div class="eyebrow">Grand Chelem des Légendes</div>
+    <h2 class="hof-title">Hall of Fame</h2>
+    <p class="hof-sub">Ceux qui ont battu les 10 champions du monde.</p>
+    <div id="hof-list" class="hof-list">
+      <div class="hof-loading">Chargement…</div>
+    </div>
   </div>
 </section>
 
@@ -350,5 +398,101 @@ footer{background:var(--fird);padding:32px;text-align:center;border-top:1px soli
   <div class="f-copy">1987 – 2023 · 148 squads · 10 Coupes du Monde · v2026.06.23</div>
 </footer>
 
+
+<script>
+(function() {
+  const LEGENDS = {
+    NZL87:'All Blacks 1987', AUS91:'Wallabies 1991', RSA95:'Springboks 1995',
+    AUS99:'Wallabies 1999', ENG03:'Angleterre 2003', RSA07:'Springboks 2007',
+    NZL11:'All Blacks 2011', NZL15:'All Blacks 2015', RSA19:'Springboks 2019',
+    RSA:'Springboks 2023'
+  };
+
+  function escHtml(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function renderEntry(e, i, isAdmin, adminKey) {
+    const xvHtml = e.xv ? e.xv.map(p =>
+      `<div class="hof-player">
+        <span class="hof-player-pos">${escHtml(p.pos||'')}</span>
+        <span class="hof-player-name">${p.name ? escHtml(p.name) : '—'}</span>
+        <span class="hof-player-note">${p.note||''}</span>
+      </div>`
+    ).join('') : '';
+
+    const logHtml = e.log ? e.log.map(m =>
+      `<div style="display:flex;justify-content:space-between;font-family:'Inter';
+        font-size:10px;padding:3px 0;border-bottom:1px solid rgba(201,168,95,0.08);">
+        <span style="color:var(--camel);font-size:9px;">✓</span>
+        <span style="flex:1;margin:0 8px;color:var(--sand);opacity:.8;">
+          ${escHtml(LEGENDS[m.opp]||m.opp)}</span>
+        <span style="color:var(--cream)">${m.my}–${m.opp_s}</span>
+      </div>`
+    ).join('') : '';
+
+    const adminBtn = isAdmin
+      ? `<button class="hof-admin-btn" onclick="delEntry(${i},'${adminKey}')">✕</button>`
+      : '';
+
+    return `
+      <div class="hof-entry">
+        <div class="hof-header" onclick="toggleHof(${i})">
+          <div class="hof-left">
+            <div class="hof-name">${escHtml(e.name)}</div>
+            <div class="hof-avg">${e.avg}</div>
+          </div>
+          <div class="hof-right">
+            <div class="hof-date">${e.date||''}</div>
+            ${adminBtn}
+            <span class="hof-arrow" id="arr-${i}">›</span>
+          </div>
+        </div>
+        <div class="hof-body" id="body-${i}">
+          <div class="hof-xv">${xvHtml}</div>
+          ${logHtml ? `<div style="margin-top:8px;border-top:1px solid rgba(201,168,95,0.1);
+            padding-top:8px;">${logHtml}</div>` : ''}
+        </div>
+      </div>`;
+  }
+
+  window.toggleHof = function(i) {
+    const body = document.getElementById('body-' + i);
+    const arr  = document.getElementById('arr-' + i);
+    const open = body.classList.toggle('open');
+    arr.classList.toggle('open', open);
+  };
+
+  window.delEntry = async function(index, key) {
+    if (!confirm('Supprimer cette entrée ?')) return;
+    await fetch('/api/chelem?key=' + key + '&index=' + index, { method: 'DELETE' });
+    loadHof();
+  };
+
+  async function loadHof() {
+    const el = document.getElementById('hof-list');
+    el.innerHTML = '<div class="hof-loading">Chargement…</div>';
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const adminKey = params.get('admin');
+      const url = adminKey ? '/api/chelem?admin=' + adminKey : '/api/chelem';
+      const res = await fetch(url);
+      const { entries, admin: isAdmin } = await res.json();
+
+      if (!entries || entries.length === 0) {
+        el.innerHTML = '<div class="hof-empty">Le Hall of Fame attend ses premiers héros.</div>';
+        return;
+      }
+      el.innerHTML = entries.slice(0, 100)
+        .map((e, i) => renderEntry(e, i, isAdmin, adminKey))
+        .join('');
+    } catch(err) {
+      el.innerHTML = '<div class="hof-empty">Le Hall of Fame attend ses premiers héros.</div>';
+    }
+  }
+
+  loadHof();
+})();
+</script>
 </body>
 </html>

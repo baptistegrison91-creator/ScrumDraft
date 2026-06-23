@@ -1713,6 +1713,8 @@ function App() {
   const [legendLog, setLegendLog] = useState([]);
   const [legendResult, setLegendResult] = useState(null); // null | 'champion' | number
   const [legendDone, setLegendDone] = useState(false); // une seule chance par XV
+  const [chelemName, setChelemName] = useState('');
+  const [chelemStatus, setChelemStatus] = useState(null); // null | 'pending' | 'ok' | 'err'
   const [cdmRetryUsed, setCdmRetryUsed] = useState(false); // un seul retry CDM autorisé (arrêté au match N)
 
   // Chargement de la partie sauvegardée (une seule fois, au montage)
@@ -1884,6 +1886,8 @@ function App() {
     setLegendResult(null);
     setLegendDone(false);
     setCdmRetryUsed(false);
+    setChelemName('');
+    setChelemStatus(null);
   }
   function startTournament() {
     const first = drawOpponent(POOL_BAND, new Set());
@@ -1979,6 +1983,43 @@ function App() {
     finaliste: 'Finaliste',
     champion: 'Champion du Monde'
   };
+  async function submitChelem() {
+    if (!chelemName.trim()) return;
+    setChelemStatus('pending');
+    try {
+      // Préparer le XV complet
+      const slotsData = slots.map(s => ({
+        pos: s.label,
+        player: s.player ? {
+          name: s.player[0],
+          note: s.player[1],
+          teamKey: s.teamKey || null
+        } : null
+      }));
+      const res = await fetch('/api/chelem', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: chelemName.trim(),
+          avg: avg,
+          slots: slotsData,
+          legendLog: legendLog.map(m => ({
+            oppKey: m.oppKey,
+            win: m.win,
+            myScore: m.myScore,
+            oppScore: m.oppScore,
+            index: m.index
+          }))
+        })
+      });
+      const text = await res.text();
+      setChelemStatus(res.ok ? 'ok' : 'err');
+    } catch (e) {
+      setChelemStatus('err');
+    }
+  }
   function startLegends() {
     setLegendPhase('active');
     setLegendIndex(0);
@@ -3118,7 +3159,63 @@ function App() {
       color: C.sand,
       opacity: 0.75
     }
-  }, legendResult === 10 ? 'Tu as battu les 10 champions du monde. Légende absolue.' : `${legendResult} champion${legendResult > 1 ? 's' : ''} battu${legendResult > 1 ? 's' : ''} sur 10`)), legendLog.map((m, i) => /*#__PURE__*/React.createElement("div", {
+  }, legendResult === 10 ? 'Tu as battu les 10 champions du monde. Légende absolue.' : `${legendResult} champion${legendResult > 1 ? 's' : ''} battu${legendResult > 1 ? 's' : ''} sur 10`), legendResult === 10 && chelemStatus !== 'ok' && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    value: chelemName,
+    onChange: e => setChelemName(e.target.value),
+    placeholder: "Ton nom ou pseudo",
+    maxLength: 30,
+    style: {
+      flex: 1,
+      background: 'rgba(244,239,226,0.08)',
+      border: `1px solid rgba(201,168,95,0.4)`,
+      borderRadius: 6,
+      padding: '9px 12px',
+      fontFamily: BODY,
+      fontSize: 13,
+      color: C.cream,
+      outline: 'none'
+    }
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: submitChelem,
+    disabled: chelemStatus === 'pending' || !chelemName.trim(),
+    style: {
+      background: C.camel,
+      color: C.fir,
+      border: 'none',
+      borderRadius: 6,
+      padding: '9px 14px',
+      cursor: 'pointer',
+      fontFamily: BODY,
+      fontWeight: 700,
+      fontSize: 11,
+      letterSpacing: 0.8,
+      textTransform: 'uppercase',
+      opacity: !chelemName.trim() || chelemStatus === 'pending' ? 0.5 : 1
+    }
+  }, chelemStatus === 'pending' ? '…' : 'Inscrire')), chelemStatus === 'err' && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: BODY,
+      fontSize: 11,
+      color: '#e06060',
+      marginTop: 6
+    }
+  }, "Erreur — réessaie dans un moment.")), legendResult === 10 && chelemStatus === 'ok' && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: BODY,
+      fontSize: 12,
+      color: C.camel,
+      marginTop: 10
+    }
+  }, "✓ Inscrit au Mur des Chélemards")), legendLog.map((m, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
     style: {
       display: 'flex',
