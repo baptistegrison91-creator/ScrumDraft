@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Test Hall of Fame</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0F2417;min-height:100vh;display:flex;align-items:center;
+  justify-content:center;padding:32px 16px;font-family:'Inter',sans-serif;}
+.card{background:rgba(15,36,23,0.95);border:1px solid rgba(201,168,95,0.2);
+  border-radius:16px;padding:32px 24px;max-width:420px;width:100%;color:#F4EFE2;}
+.eyebrow{font-size:10px;letter-spacing:.15em;text-transform:uppercase;
+  color:#C9A85F;margin-bottom:8px;}
+.title{font-family:'Cormorant Garamond';font-weight:700;font-size:32px;
+  color:#C9A85F;margin-bottom:4px;}
+.sub{font-family:'Cormorant Garamond';font-style:italic;font-size:15px;
+  color:#F4EFE2;opacity:.7;margin-bottom:24px;}
+.form{display:flex;gap:8px;margin-bottom:12px;}
+input{flex:1;background:rgba(244,239,226,0.08);border:1px solid rgba(201,168,95,0.4);
+  border-radius:6px;padding:11px 14px;font-family:'Inter';font-size:14px;
+  color:#F4EFE2;outline:none;}
+input::placeholder{color:rgba(244,239,226,0.3);}
+button{background:#C9A85F;color:#0F2417;border:none;border-radius:6px;
+  padding:11px 16px;cursor:pointer;font-family:'Inter';font-weight:700;
+  font-size:11px;letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;}
+button:disabled{opacity:0.5;cursor:not-allowed;}
+.status{font-size:12px;margin-top:8px;min-height:20px;}
+.status.ok{color:#C9A85F;}
+.status.err{color:#e06060;}
+.status.pending{color:rgba(244,239,226,0.5);}
+.separator{border:none;border-top:1px solid rgba(201,168,95,0.15);margin:20px 0;}
+.log-title{font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(244,239,226,0.4);margin-bottom:10px;}
+.match{display:flex;justify-content:space-between;padding:5px 0;
+  border-bottom:1px solid rgba(201,168,95,0.08);font-size:12px;}
+.match-opp{color:rgba(244,239,226,0.7);}
+.match-score{color:#C9A85F;font-weight:600;}
+.v{color:#4CAF50;font-size:9px;margin-right:6px;}
+</style>
+</head><body>
+<div class="card">
+  <div class="eyebrow">Tournoi des Légendes</div>
+  <div class="title">Grand Chelem</div>
+  <div class="sub">Tu as battu les 10 champions du monde.</div>
+
+  <div class="form">
+    <input id="nameInput" placeholder="Ton nom ou pseudo" maxlength="30"/>
+    <button id="btn" onclick="submit()">Inscrire</button>
+  </div>
+  <div class="status" id="status"></div>
+
+  <hr class="separator">
+  <div class="log-title">Tes 10 victoires</div>
+  <div id="log">
+    <div class="match"><span><span class="v">V</span><span class="match-opp">All Blacks 1987</span></span><span class="match-score">32–22</span></div>
+    <div class="match"><span><span class="v">V</span><span class="match-opp">Wallabies 1991</span></span><span class="match-score">21–16</span></div>
+    <div class="match"><span><span class="v">V</span><span class="match-opp">Springboks 1995</span></span><span class="match-score">30–17</span></div>
+    <div class="match"><span><span class="v">V</span><span class="match-opp">Wallabies 1999</span></span><span class="match-score">33–16</span></div>
+    <div class="match"><span><span class="v">V</span><span class="match-opp">Angleterre 2003</span></span><span class="match-score">34–21</span></div>
+    <div class="match"><span><span class="v">V</span><span class="match-opp">Springboks 2007</span></span><span class="match-score">29–16</span></div>
+    <div class="match"><span><span class="v">V</span><span class="match-opp">All Blacks 2011</span></span><span class="match-score">30–20</span></div>
+    <div class="match"><span><span class="v">V</span><span class="match-opp">All Blacks 2015</span></span><span class="match-score">29–19</span></div>
+    <div class="match"><span><span class="v">V</span><span class="match-opp">Springboks 2019</span></span><span class="match-score">37–22</span></div>
+    <div class="match"><span><span class="v">V</span><span class="match-opp">Springboks 2023</span></span><span class="match-score">29–23</span></div>
+  </div>
+</div>
+
+<script>
+async function submit() {
+  const name = document.getElementById('nameInput').value.trim();
+  if (!name) return;
+  const btn = document.getElementById('btn');
+  const status = document.getElementById('status');
+  btn.disabled = true;
+  status.className = 'status pending';
+  status.textContent = 'Inscription en cours…';
+
+  try {
+    const res = await fetch('https://scrumdraft.pages.dev/api/chelem', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        name,
+        avg: 87.0,
+        slots: [
+          {pos:"Pilier",player:{name:"Os du Randt",note:85,teamKey:"RSA95"}},
+          {pos:"Talonneur",player:{name:"Keith Wood",note:90,teamKey:"IRL99"}},
+          {pos:"Pilier",player:{name:"Tony Woodcock",note:82,teamKey:"NZL11"}},
+          {pos:"2e ligne",player:{name:"Maro Itoje",note:87,teamKey:"ENG19"}},
+          {pos:"2e ligne",player:{name:"Brodie Retallick",note:85,teamKey:"NZL15"}},
+          {pos:"Flanker",player:{name:"Sam Warburton",note:88,teamKey:"WAL11"}},
+          {pos:"Flanker",player:{name:"Pablo Matera",note:86,teamKey:"ARG15"}},
+          {pos:"N°8",player:{name:"Sergio Parisse",note:88,teamKey:"ITA07"}},
+          {pos:"Mêlée",player:{name:"George Gregan",note:89,teamKey:"AUS99"}},
+          {pos:"Ouverture",player:{name:"Waisale Serevi",note:87,teamKey:"FIJ99"}},
+          {pos:"Ailier",player:{name:"Rory Underwood",note:85,teamKey:"ENG91"}},
+          {pos:"Centre",player:{name:"Jeremy Guscott",note:87,teamKey:"ENG91"}},
+          {pos:"Centre",player:{name:"Yannick Jauzion",note:85,teamKey:"FRA03"}},
+          {pos:"Ailier",player:{name:"Bryan Habana",note:91,teamKey:"RSA07"}},
+          {pos:"Arrière",player:{name:"Serge Blanco",note:90,teamKey:"FRA91"}}
+        ],
+        legendLog: [
+          {oppKey:"NZL87",win:true,myScore:32,oppScore:22,index:0},
+          {oppKey:"AUS91",win:true,myScore:21,oppScore:16,index:1},
+          {oppKey:"RSA95",win:true,myScore:30,oppScore:17,index:2},
+          {oppKey:"AUS99",win:true,myScore:33,oppScore:16,index:3},
+          {oppKey:"ENG03",win:true,myScore:34,oppScore:21,index:4},
+          {oppKey:"RSA07",win:true,myScore:29,oppScore:16,index:5},
+          {oppKey:"NZL11",win:true,myScore:30,oppScore:20,index:6},
+          {oppKey:"NZL15",win:true,myScore:29,oppScore:19,index:7},
+          {oppKey:"RSA19",win:true,myScore:37,oppScore:22,index:8},
+          {oppKey:"RSA",win:true,myScore:29,oppScore:23,index:9}
+        ]
+      })
+    });
+    const text = await res.text();
+    if (res.ok) {
+      status.className = 'status ok';
+      status.textContent = '✓ Inscrit au Hall of Fame !';
+      btn.textContent = '✓';
+    } else {
+      status.className = 'status err';
+      status.textContent = 'Erreur : ' + text;
+      btn.disabled = false;
+    }
+  } catch(e) {
+    status.className = 'status err';
+    status.textContent = 'Erreur réseau.';
+    btn.disabled = false;
+  }
+}
+</script>
+</body></html>
