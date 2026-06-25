@@ -1954,13 +1954,8 @@ function App() {
     while (r >= 3) {
       if (r >= 7 && Math.random() < 0.45) {
         ev.push({
-          type: 'essai',
-          pts: 5
-        });
-        ev.push({
-          type: 'transfo',
-          pts: 2,
-          quick: true
+          type: 'essai_transfo',
+          pts: 7
         });
         r -= 7;
       } else if (r >= 5 && Math.random() < 0.35) {
@@ -1978,21 +1973,15 @@ function App() {
       }
     }
     if (r === 2) {
-      const i = ev.findIndex(e => e.type === 'essai' && !ev[ev.indexOf(e) + 1]?.quick);
-      if (i >= 0) {
-        ev.splice(i, 1, {
-          type: 'essai',
-          pts: 5
-        }, {
-          type: 'transfo',
-          pts: 2,
-          quick: true
-        });
-      }
+      const i = ev.findIndex(e => e.type === 'essai');
+      if (i >= 0) ev[i] = {
+        type: 'essai_transfo',
+        pts: 7
+      };
     }
     return ev;
   }
-  function generateMatchEvents(myF, oppF) {
+  function generateMatchEvents(myF, oppF, myRoster, oppRoster) {
     const mE = decomposeScore(myF).map(e => ({
       ...e,
       team: 'my'
@@ -2024,15 +2013,59 @@ function App() {
       ...e,
       min: mins(o2.length, 42)[i]
     }))].sort((a, b) => a.min - b.min);
+    function pickScorer(team, type) {
+      if (type === 'essai') {
+        const isBack = Math.random() < 0.7;
+        if (team === 'my') {
+          const pool = isBack ? myRoster.slice(8, 15) : myRoster.slice(0, 8);
+          const valid = pool.filter(s => s && s.player && s.player.nom);
+          if (!valid.length) return null;
+          return valid[Math.floor(Math.random() * valid.length)].player.nom;
+        } else {
+          // joueurs adverses = ['Nom', note, ['Poste']]
+          const pool = isBack ? (oppRoster || []).slice(8, 15) : (oppRoster || []).slice(0, 8);
+          const valid = pool.filter(p => p && p[0]);
+          if (!valid.length) return null;
+          return valid[Math.floor(Math.random() * valid.length)][0];
+        }
+      }
+      // Transfo, pénalité, drop → ouverture (index 9)
+      if (team === 'my') return myRoster[9]?.player?.nom || null;
+      return (oppRoster || [])[9]?.[0] || null;
+    }
     let my = 0,
       opp = 0;
-    const score = evts => evts.map(e => {
+    const score = evts => evts.flatMap(e => {
+      if (e.type === 'essai_transfo') {
+        if (e.team === 'my') my += 5;else opp += 5;
+        const e1 = {
+          ...e,
+          type: 'essai',
+          pts: 5,
+          scorer: pickScorer(e.team, 'essai'),
+          rMy: my,
+          rOpp: opp
+        };
+        if (e.team === 'my') my += 2;else opp += 2;
+        const e2 = {
+          ...e,
+          type: 'transfo',
+          pts: 2,
+          min: e.min + 1,
+          quick: true,
+          scorer: pickScorer(e.team, 'transfo'),
+          rMy: my,
+          rOpp: opp
+        };
+        return [e1, e2];
+      }
       if (e.team === 'my') my += e.pts;else opp += e.pts;
-      return {
+      return [{
         ...e,
+        scorer: pickScorer(e.team, e.type),
         rMy: my,
         rOpp: opp
-      };
+      }];
     });
     const f = score(first);
     const hMy = my,
@@ -2069,7 +2102,7 @@ function App() {
               });
             });
           } catch (err) {}
-        }, 160);
+        }, 120);
         return;
       }
       try {
@@ -2095,7 +2128,7 @@ function App() {
           });
         });
       }
-    }, 480);
+    }, 360);
   }
   function generateHalf(myF, oppF) {
     const drama = Math.random() < 0.28;
@@ -2206,7 +2239,7 @@ function App() {
     }
     const poolIdx2 = matchLog.filter(m => m.stage.startsWith('Poule')).length;
     const animLbl = simPhase === 'pool' ? ['1er match de poule', '2ème match de poule', '3ème match de poule'][poolIdx2] || 'Match de poule' : simPhase === 'knockout-quart' ? 'Quart de finale' : simPhase === 'knockout-demi' ? 'Demi-finale' : 'Finale';
-    const mEvts = generateMatchEvents(result.myScore, result.oppScore);
+    const mEvts = generateMatchEvents(result.myScore, result.oppScore, slots, TEAMS[currentOpponent]?.joueurs);
     const allEvts = [].concat(mEvts.first, [{
       type: '__half__',
       halfMy: mEvts.halfMy,
@@ -2308,13 +2341,13 @@ function App() {
       } else {
         setLegendIndex(legendIndex + 1);
       }
-      setMatchAnim(null);
+      setTimeout(() => setMatchAnim(null), 200);
     };
     if (!simMode) {
       commitLeg();
       return;
     }
-    const lEvts = generateMatchEvents(result.myScore, result.oppScore);
+    const lEvts = generateMatchEvents(result.myScore, result.oppScore, slots, TEAMS[oppKey]?.joueurs);
     const allLEvts = [...lEvts.first, {
       type: '__half__',
       halfMy: lEvts.halfMy,
@@ -2582,26 +2615,20 @@ function App() {
         bottom: 0,
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        zIndex: 300,
-        paddingTop: 44,
-        paddingLeft: 24,
-        paddingRight: 24,
-        paddingBottom: 24,
-        overflowY: 'auto'
+        zIndex: 300
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
-        width: '100%',
-        maxWidth: 340
+        flexShrink: 0,
+        padding: '24px 24px 14px',
+        borderBottom: '1px solid rgba(244,239,226,0.07)'
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
         height: 2,
-        marginBottom: 20,
+        marginBottom: 14,
         background: 'linear-gradient(90deg,transparent,#C9A85F,transparent)',
-        opacity: .5
+        opacity: .45
       }
     }), /*#__PURE__*/React.createElement("div", {
       style: {
@@ -2619,9 +2646,7 @@ function App() {
         display: 'flex',
         alignItems: 'flex-end',
         justifyContent: 'center',
-        gap: 14,
-        marginBottom: 16,
-        marginTop: 6
+        gap: 14
       }
     }, /*#__PURE__*/React.createElement("div", {
       style: {
@@ -2634,25 +2659,25 @@ function App() {
         fontSize: 9,
         letterSpacing: '.1em',
         textTransform: 'uppercase',
-        color: 'rgba(244,239,226,0.45)',
-        marginBottom: 8
+        color: 'rgba(244,239,226,0.4)',
+        marginBottom: 6
       }
     }, "Ton XV"), /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: SERIF,
-        fontSize: 78,
+        fontSize: 70,
         fontWeight: 700,
         lineHeight: 1,
-        color: myLeading ? '#F4EFE2' : 'rgba(244,239,226,0.2)',
-        textShadow: myLeading ? '0 0 36px rgba(212,175,90,0.45)' : 'none'
+        color: myLeading ? '#F4EFE2' : 'rgba(244,239,226,0.18)',
+        textShadow: myLeading ? '0 0 32px rgba(212,175,90,0.4)' : 'none'
       }
     }, shownMy)), /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: SERIF,
-        fontSize: 26,
+        fontSize: 24,
         color: 'rgba(244,239,226,0.1)',
         fontWeight: 300,
-        paddingBottom: 6
+        paddingBottom: 4
       }
     }, "–"), /*#__PURE__*/React.createElement("div", {
       style: {
@@ -2665,8 +2690,8 @@ function App() {
         fontSize: 9,
         letterSpacing: '.1em',
         textTransform: 'uppercase',
-        color: 'rgba(244,239,226,0.45)',
-        marginBottom: 8,
+        color: 'rgba(244,239,226,0.4)',
+        marginBottom: 6,
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
@@ -2675,13 +2700,24 @@ function App() {
     }, oppName), /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: SERIF,
-        fontSize: 78,
+        fontSize: 70,
         fontWeight: 700,
         lineHeight: 1,
-        color: !myLeading ? '#F4EFE2' : 'rgba(244,239,226,0.2)',
-        textShadow: !myLeading ? '0 0 36px rgba(212,175,90,0.45)' : 'none'
+        color: !myLeading ? '#F4EFE2' : 'rgba(244,239,226,0.18)',
+        textShadow: !myLeading ? '0 0 32px rgba(212,175,90,0.4)' : 'none'
       }
-    }, shownOpp))), scoreEvts.length > 0 && /*#__PURE__*/React.createElement("div", {
+    }, shownOpp)))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        overflowY: 'auto',
+        padding: '10px 24px 24px'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        maxWidth: 340,
+        margin: '0 auto'
+      }
+    }, scoreEvts.length > 0 && /*#__PURE__*/React.createElement("div", {
       style: {
         borderTop: '1px solid rgba(244,239,226,0.07)',
         paddingTop: 10
@@ -2755,7 +2791,7 @@ function App() {
           flex: 1,
           color: isMy ? '#C9A85F' : 'rgba(244,239,226,0.6)'
         }
-      }, SL[e.type] || e.type), /*#__PURE__*/React.createElement("span", {
+      }, SL[e.type] || e.type, e.scorer ? ` — ${e.scorer}` : ''), /*#__PURE__*/React.createElement("span", {
         style: {
           fontFamily: SERIF,
           fontSize: 13,
@@ -2768,7 +2804,7 @@ function App() {
         display: 'flex',
         gap: 8,
         justifyContent: 'center',
-        marginTop: 8
+        marginTop: 16
       }
     }, [0, 1, 2].map(i => /*#__PURE__*/React.createElement("div", {
       key: i,
@@ -2779,7 +2815,7 @@ function App() {
         background: 'rgba(201,168,95,0.4)',
         opacity: 0.5
       }
-    })))));
+    }))))));
   })() : null;
   return /*#__PURE__*/React.createElement("div", {
     style: {
@@ -3717,42 +3753,65 @@ function App() {
       marginTop: 16,
       background: `linear-gradient(160deg,${C.fir2},${C.firDeep})`,
       borderRadius: 10,
-      padding: '20px 16px',
-      border: `1px solid ${legendResult === 10 ? C.camel : 'rgba(201,168,95,0.25)'}`
+      padding: '24px 16px 20px',
+      border: `1px solid ${legendResult === 10 ? C.camel : 'rgba(201,168,95,0.2)'}`
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: 'center',
-      marginBottom: 16,
-      paddingBottom: 14,
-      borderBottom: '1px solid rgba(201,168,95,0.15)'
+      marginBottom: 20,
+      paddingBottom: 18,
+      borderBottom: '1px solid rgba(201,168,95,0.12)'
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: BODY,
-      fontSize: 9,
-      letterSpacing: 2,
+      fontSize: 8,
+      letterSpacing: '.2em',
       textTransform: 'uppercase',
-      color: C.camel,
-      marginBottom: 8
+      color: 'rgba(201,168,95,0.55)',
+      marginBottom: 14
     }
-  }, "Tournoi des Légendes"), /*#__PURE__*/React.createElement("div", {
+  }, "Tournoi des Légendes"), legendResult === 10 ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: SERIF,
       fontWeight: 700,
-      lineHeight: 1,
-      fontSize: legendResult === 10 ? 20 : 32,
-      color: legendResult === 10 ? C.camel : C.cream,
-      marginBottom: 6
+      fontSize: 28,
+      color: C.camel,
+      marginBottom: 8,
+      letterSpacing: '-.01em'
     }
-  }, legendResult === 10 ? 'Grand Chelem des Légendes' : `${legendResult} / 10`), /*#__PURE__*/React.createElement("div", {
+  }, "Grand Chelem des Légendes"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: BODY,
       fontSize: 11,
       color: C.sand,
-      opacity: 0.75
+      opacity: 0.7
     }
-  }, legendResult === 10 ? 'Tu as battu les 10 champions du monde. Légende absolue.' : `${legendResult} champion${legendResult > 1 ? 's' : ''} battu${legendResult > 1 ? 's' : ''} sur 10`), legendResult === 10 && chelemStatus !== 'ok' && /*#__PURE__*/React.createElement("div", {
+  }, "Tu as battu les 10 champions du monde. Légende absolue.")) : /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: SERIF,
+      fontWeight: 700,
+      fontSize: 64,
+      lineHeight: 1,
+      color: C.cream,
+      letterSpacing: '-.02em'
+    }
+  }, legendResult, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 32,
+      opacity: 0.35,
+      fontWeight: 400
+    }
+  }, " / 10")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: BODY,
+      fontSize: 11,
+      color: C.sand,
+      opacity: 0.6,
+      marginTop: 6
+    }
+  }, legendResult >= 8 ? 'Performance exceptionnelle' : legendResult >= 6 ? 'Très bon résultat' : legendResult >= 4 ? 'Beau parcours' : 'La légende est difficile à atteindre')), legendResult === 10 && chelemStatus !== 'ok' && /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 12
     }
