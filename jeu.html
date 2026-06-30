@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>ScrumDraft — Compose ton XV</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet"><style>html,body{margin:0;padding:0;}#back-link{position:fixed;top:14px;left:14px;z-index:100;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:#F4EFE2;background:rgba(15,36,23,0.55);backdrop-filter:blur(4px);text-decoration:none;padding:7px 12px;border-radius:7px;border:1px solid rgba(201,168,95,0.35);}</style></head><body><a id="back-link" href="index.html">← ScrumDraft</a><div style="position:fixed;bottom:8px;right:10px;font-family:sans-serif;font-size:10px;color:rgba(244,239,226,0.35);z-index:100;">v2026.06.26</div><div id="root"></div><script>/**
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>ScrumDraft — Compose ton XV</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet"><style>html,body{margin:0;padding:0;}#back-link{position:fixed;top:14px;left:14px;z-index:100;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:#F4EFE2;background:rgba(15,36,23,0.55);backdrop-filter:blur(4px);text-decoration:none;padding:7px 12px;border-radius:7px;border:1px solid rgba(201,168,95,0.35);}</style></head><body><a id="back-link" href="index.html">← ScrumDraft</a><div style="position:fixed;bottom:8px;right:10px;font-family:sans-serif;font-size:10px;color:rgba(244,239,226,0.35);z-index:100;">v2026.06.30-2309</div><div id="root"></div><script>/**
  * @license React
  * react.production.min.js
  *
@@ -1032,7 +1032,7 @@ const TEAMS = {
     annee: 1995,
     parcours: 'quart',
     couleur: '#003087',
-    joueurs: [['Peter Wright', 76, ['Pilier']], ['Paul Burnell', 75, ['Pilier']], ['Kenny Milne', 77, ['Talonneur']], ['Doddie Weir', 80, ['2e ligne']], ['Andy Reed', 78, ['2e ligne']], ['Rob Wainwright', 80, ['Flanker']], ['Iain Morrison', 78, ['Flanker']], ['Peter Walton', 77, ['N°8']], ['Bryan Redpath', 80, ['Mêlée']], ['Craig Chalmers', 79, ['Ouverture']], ['Kenny Logan', 79, ['Ailier']], ['Scott Hastings', 79, ['Centre']], ['Gregor Townsend', 83, ['Centre']], ['Iwan Tukalo', 78, ['Ailier']], ['Gavin Hastings', 88, ['Arrière']]]
+    joueurs: [['Peter Wright', 76, ['Pilier']], ['Paul Burnell', 75, ['Pilier']], ['Kenny Milne', 77, ['Talonneur']], ['Doddie Weir', 80, ['2e ligne']], ['Andy Reed', 78, ['2e ligne']], ['Rob Wainwright', 80, ['Flanker']], ['Iain Morrison', 78, ['Flanker']], ['Peter Walton', 77, ['N°8']], ['Bryan Redpath', 80, ['Mêlée']], ['Craig Chalmers', 79, ['Ouverture']], ['Kenny Logan', 79, ['Ailier']], ['Scott Hastings', 79, ['Centre']], ['Gregor Townsend', 83, ['Centre']], ['Tony Stanger', 79, ['Ailier']], ['Gavin Hastings', 88, ['Arrière']]]
   },
   IRL95: {
     nom: 'Irlande',
@@ -1446,7 +1446,7 @@ TEAM_KEYS.forEach(k => {
 });
 const STRENGTH_SORTED = [...TEAM_KEYS].sort((a, b) => TEAM_AVG[a] - TEAM_AVG[b]);
 const N_TEAMS = TEAM_KEYS.length;
-const POOL_BAND = TEAM_KEYS; // toutes les équipes jouables en poule
+const POOL_BAND = TEAM_KEYS.filter(k => TEAMS[k].parcours === 'poule'); // adversaires de poule = équipes historiquement éliminées en poule uniquement
 const QUART_BAND = TEAM_KEYS.filter(k => ['quart', 'demi', 'finaliste', 'vainqueur'].includes(TEAMS[k].parcours));
 const DEMI_BAND = TEAM_KEYS.filter(k => ['demi', 'finaliste', 'vainqueur'].includes(TEAMS[k].parcours));
 const FINALE_BAND = TEAM_KEYS.filter(k => ['finaliste', 'vainqueur'].includes(TEAMS[k].parcours));
@@ -1508,9 +1508,12 @@ const LEGEND_MESSAGES = {
     lose: "L'Afrique du Sud 2023 t'a arrêté à la porte du Grand Chelem. Kolisi soulève le trophée deux fois."
   }
 };
+function pwin(diff) {
+  return 1 / (1 + Math.exp(-diff / SKILL_SCALE));
+}
 function simulateMatch(myAvg, oppAvg, maxMargin = 40) {
   const diff = myAvg - oppAvg;
-  const pWin = 1 / (1 + Math.exp(-diff / SKILL_SCALE));
+  const pWin = pwin(diff);
   const win = Math.random() < pWin;
   const base = 14 + Math.floor(Math.random() * 10);
   // Résultat logique = le favori gagne
@@ -1707,6 +1710,7 @@ function App() {
   const [seenThisTurn, setSeenThisTurn] = useState(() => new Set([])); // évite de revoir une équipe déjà croisée ce tour-ci
   const [turn, setTurn] = useState(1);
   const [changesLeft, setChangesLeft] = useState(3);
+  const [moneyTimeCount, setMoneyTimeCount] = useState(0); // max 3 par partie
   const [done, setDone] = useState(false);
   const [copied, setCopied] = useState(false);
   const [pending, setPending] = useState(null); // joueur choisi, en attente de case
@@ -1814,7 +1818,11 @@ function App() {
     return d !== 0 ? d : b.note - a.note;
   });
   useEffect(() => {
-    if (loaded && !done && !pending && pickable.length === 0) setTeam(drawTeam());
+    if (loaded && !done && !pending && pickable.length === 0) {
+      const auto = drawTeam();
+      setTeam(auto);
+      setSeenThisTurn(prev => new Set(prev).add(auto));
+    }
   });
   const filled = slots.filter(s => s.player).length;
   const avg = filled ? slots.filter(s => s.player).reduce((a, s) => a + s.player.note, 0) / filled : 0;
@@ -1852,26 +1860,28 @@ function App() {
   function changeEdition() {
     // même nation, autre année, jamais une déjà vue ce tour-ci
     if (changesLeft <= 0 || pending) return;
+    const seen = new Set([...seenThisTurn, team]); // inclure l'équipe courante
     const base = TEAM_KEYS.filter(k => nationOf(k) === nationOf(team) && k !== team);
-    const cand = base.filter(k => !seenThisTurn.has(k));
-    const pool = cand.length ? cand : base;
+    const cand = base.filter(k => !seen.has(k));
+    const pool = cand.length ? cand : base.filter(k => k !== team);
     if (!pool.length) return;
     const next = pool[Math.floor(Math.random() * pool.length)];
     setChangesLeft(changesLeft - 1);
     setTeam(next);
-    setSeenThisTurn(prev => new Set(prev).add(next));
+    setSeenThisTurn(prev => new Set([...prev, team, next]));
   }
   function changeNation() {
     // même édition, autre nation, jamais une déjà vue ce tour-ci
     if (changesLeft <= 0 || pending) return;
+    const seen = new Set([...seenThisTurn, team]); // inclure l'équipe courante
     const base = TEAM_KEYS.filter(k => TEAMS[k].annee === t.annee && k !== team);
-    const cand = base.filter(k => !seenThisTurn.has(k));
-    const pool = cand.length ? cand : base;
+    const cand = base.filter(k => !seen.has(k));
+    const pool = cand.length ? cand : base.filter(k => k !== team);
     if (!pool.length) return;
     const next = pool[Math.floor(Math.random() * pool.length)];
     setChangesLeft(changesLeft - 1);
     setTeam(next);
-    setSeenThisTurn(prev => new Set(prev).add(next));
+    setSeenThisTurn(prev => new Set([...prev, team, next]));
   }
   function reset() {
     window.storage.delete('save').catch(() => {});
@@ -1885,6 +1895,7 @@ function App() {
     setUsedNames(new Set());
     setTeam(fresh);
     setSeenThisTurn(new Set([fresh]));
+    setMoneyTimeCount(0);
     setTurn(1);
     setChangesLeft(3);
     setDone(false);
@@ -2073,18 +2084,21 @@ function App() {
       idx++;
       if (e.quick) {
         setTimeout(function () {
+          const updater = function (prev) {
+            if (!prev) return null;
+            return Object.assign({}, prev, {
+              visibleEvents: (prev.visibleEvents || []).concat([e]),
+              myScore: e.team === 'my' ? (prev.myScore || 0) + e.pts : prev.myScore || 0,
+              oppScore: e.team === 'opp' ? (prev.oppScore || 0) + e.pts : prev.oppScore || 0
+            });
+          };
           try {
             ReactDOM.flushSync(function () {
-              setAnim(function (prev) {
-                if (!prev) return null;
-                return Object.assign({}, prev, {
-                  visibleEvents: (prev.visibleEvents || []).concat([e]),
-                  myScore: e.team === 'my' ? (prev.myScore || 0) + e.pts : prev.myScore || 0,
-                  oppScore: e.team === 'opp' ? (prev.oppScore || 0) + e.pts : prev.oppScore || 0
-                });
-              });
+              setAnim(updater);
             });
-          } catch (err) {}
+          } catch (err) {
+            setAnim(updater); // fallback sans flushSync si ça échoue
+          }
         }, 120);
         return;
       }
@@ -2145,79 +2159,231 @@ function App() {
       };
     }
   }
+
+  // ── Money-time : dernier acte du match en cas de défaite serrée (écart 1,2,4,6) ──
+  const MONEY_TIME_FREQ = 0.25; // % d'apparition quand les conditions sont réunies
+
+  function buildMoneyTime(myScore, oppScore, oppKey) {
+    const deficit = oppScore - myScore;
+    if (![1, 2, 4, 6].includes(deficit)) return null;
+    if (moneyTimeCount >= 3) return null;
+    if (Math.random() >= MONEY_TIME_FREQ) return null;
+    const kickerSlot = slots[9]; // poste 10, Ouverture
+    const kickerNote = kickerSlot?.player?.note ?? 75;
+    const kickerName = kickerSlot?.player?.nom ?? 'Le buteur';
+    const kickRate = Math.max(0, Math.min(99, kickerNote - 5)) / 100;
+    const myPack = slots.slice(0, 8).reduce((s, sl) => s + (sl.player?.note || 70), 0) / 8;
+    const myBacks = slots.slice(8, 15).reduce((s, sl) => s + (sl.player?.note || 70), 0) / 7;
+    const oppRoster = TEAMS[oppKey]?.joueurs || [];
+    const oppPack = oppRoster.slice(0, 8).reduce((s, p) => s + (p[1] || 70), 0) / Math.max(1, oppRoster.slice(0, 8).length);
+    const oppBacks = oppRoster.slice(8, 15).reduce((s, p) => s + (p[1] || 70), 0) / Math.max(1, oppRoster.slice(8, 15).length);
+    const kind = Math.random() < 0.5 ? 'penalty' : 'drop'; // scénario A (pénalité) ou B (drop)
+    const tryRate = kind === 'penalty' ? pwin(myPack - oppPack) : pwin(myBacks - oppBacks);
+    setMoneyTimeCount(c => c + 1);
+    return {
+      deficit,
+      kickRate,
+      tryRate,
+      kickerName,
+      kind,
+      headerLabel: kind === 'penalty' ? 'Pénalité face aux poteaux, 30m' : 'Action dans les 22m adverses',
+      safeLabel: kind === 'penalty' ? 'Prendre les points' : 'Tenter le drop',
+      safeSub: `${kickerName} — Ouverture`,
+      riskLabel: kind === 'penalty' ? 'Aller en touche, tenter l\'essai' : 'Écarter, tenter l\'essai',
+      riskUnit: kind === 'penalty' ? 'Avants' : '3/4',
+      riskMy: Math.round(kind === 'penalty' ? myPack : myBacks),
+      riskOpp: Math.round(kind === 'penalty' ? oppPack : oppBacks)
+    };
+  }
+  function resolveMoneyTime(mt, choice) {
+    const kickerName = mt.kickerName;
+    // choice: 'safe' (3 pts, taux=kickRate) ou 'risk' (essai 5/7 pts)
+    if (choice === 'safe') {
+      const ok = Math.random() < mt.kickRate;
+      if (!ok) {
+        return {
+          points: 0,
+          events: [],
+          success: false,
+          flipped: false,
+          message: `${kickerName} manque sa cible — le match s'achève sur cette désillusion.`
+        };
+      }
+      const flipped = 3 > mt.deficit;
+      return {
+        points: 3,
+        success: true,
+        flipped,
+        events: [{
+          type: mt.kind === 'penalty' ? 'pénalité' : 'drop',
+          team: 'my',
+          pts: 3,
+          scorer: kickerName,
+          min: 80,
+          quick: false
+        }],
+        message: flipped ? `${kickerName} ne tremble pas et offre la victoire à son équipe !` : `${kickerName} passe les 3 points, mais l'écart reste trop important.`
+      };
+    }
+    // choix risqué : essai
+    const tryOk = Math.random() < mt.tryRate;
+    if (!tryOk) {
+      return {
+        points: 0,
+        events: [],
+        success: false,
+        flipped: false,
+        message: mt.kind === 'penalty' ? `Le pack adverse referme la dernière munition en touche.` : `La défense adverse étouffe le dernier assaut des trois-quarts.`
+      };
+    }
+    const scorerSlot = mt.kind === 'penalty' ? slots.slice(0, 8).filter(s => s.player)[Math.floor(Math.random() * Math.max(1, slots.slice(0, 8).filter(s => s.player).length))] : slots.slice(8, 15).filter(s => s.player)[Math.floor(Math.random() * Math.max(1, slots.slice(8, 15).filter(s => s.player).length))];
+    const tryScorer = scorerSlot?.player?.nom ?? 'Un avant';
+    const events = [{
+      type: 'essai',
+      team: 'my',
+      pts: 5,
+      scorer: tryScorer,
+      min: 80,
+      quick: false
+    }];
+    const convOk = Math.random() < mt.kickRate;
+    if (convOk) {
+      events.push({
+        type: 'transfo',
+        team: 'my',
+        pts: 2,
+        scorer: kickerName,
+        min: 81,
+        quick: true
+      });
+    }
+    const finalPts = convOk ? 7 : 5;
+    const flipped = finalPts > mt.deficit;
+    const message = convOk ? flipped ? `${tryScorer} s'arrache dans l'en-but, ${kickerName} ajoute la transformation : la remontée est totale !` : `${tryScorer} inscrit l'essai et ${kickerName} transforme, mais ça ne suffit pas.` : flipped ? `${tryScorer} inscrit l'essai de la victoire !` : `${tryScorer} marque, mais la transformation de ${kickerName} s'envole — l'écart reste trop important.`;
+    return {
+      points: finalPts,
+      events,
+      success: true,
+      flipped,
+      message
+    };
+  }
   function playMatch() {
     const oppAvg = TEAM_AVG[currentOpponent] + (PHASE_BONUS[simPhase] || 0);
     const result = simulateMatch(avg, oppAvg);
     const matchStageLabel = simPhase === 'pool' ? `Poule ${matchLog.filter(m => m.stage.startsWith('Poule')).length + 1}` : simPhase === 'knockout-quart' ? 'Quart' : simPhase === 'knockout-demi' ? 'Demi' : 'Finale';
-    const entry = {
-      stage: matchStageLabel,
-      oppKey: currentOpponent,
-      oppAvg,
-      ...result
-    };
-    const newLog = [...matchLog, entry];
 
-    // Pré-calculer tous les changements d'état
-    let nextSimPhase = simPhase,
-      nextTournamentResult = null,
-      nextCurrentOpponent = currentOpponent,
-      nextUsedOpponents = new Set(usedOpponents);
-    if (simPhase === 'pool') {
-      const poolMatches = newLog.filter(m => m.stage.startsWith('Poule'));
-      if (poolMatches.length < 3) {
-        const next = drawOpponent(POOL_BAND, nextUsedOpponents);
-        nextUsedOpponents.add(next);
-        nextCurrentOpponent = next;
-      } else {
-        const wins = poolMatches.filter(m => m.win).length;
-        if (wins >= 2) {
-          const next = drawOpponent(QUART_BAND, nextUsedOpponents);
+    // Finalise le match avec un résultat éventuellement modifié par le money-time
+    function finalizeMatch(finalMy, finalOpp, finalWin) {
+      const entry = {
+        stage: matchStageLabel,
+        oppKey: currentOpponent,
+        oppAvg,
+        myScore: finalMy,
+        oppScore: finalOpp,
+        win: finalWin
+      };
+      const newLog = [...matchLog, entry];
+      let nextSimPhase = simPhase,
+        nextTournamentResult = null,
+        nextCurrentOpponent = currentOpponent,
+        nextUsedOpponents = new Set(usedOpponents);
+      nextUsedOpponents.add(currentOpponent);
+      if (simPhase === 'pool') {
+        const poolMatches = newLog.filter(m => m.stage.startsWith('Poule'));
+        if (poolMatches.length < 3) {
+          const next = drawOpponent(POOL_BAND, nextUsedOpponents);
           nextUsedOpponents.add(next);
           nextCurrentOpponent = next;
-          nextSimPhase = 'knockout-quart';
+        } else {
+          const wins = poolMatches.filter(m => m.win).length;
+          if (wins >= 2) {
+            const next = drawOpponent(QUART_BAND, nextUsedOpponents);
+            nextUsedOpponents.add(next);
+            nextCurrentOpponent = next;
+            nextSimPhase = 'knockout-quart';
+          } else {
+            nextSimPhase = 'over';
+            nextTournamentResult = 'poule';
+            nextCurrentOpponent = null;
+          }
+        }
+      } else if (simPhase === 'knockout-quart') {
+        if (finalWin) {
+          const next = drawOpponent(DEMI_BAND, nextUsedOpponents);
+          nextUsedOpponents.add(next);
+          nextCurrentOpponent = next;
+          nextSimPhase = 'knockout-demi';
         } else {
           nextSimPhase = 'over';
-          nextTournamentResult = 'poule';
+          nextTournamentResult = 'quart';
           nextCurrentOpponent = null;
         }
-      }
-    } else if (simPhase === 'knockout-quart') {
-      if (result.win) {
-        const next = drawOpponent(DEMI_BAND, nextUsedOpponents);
-        nextUsedOpponents.add(next);
-        nextCurrentOpponent = next;
-        nextSimPhase = 'knockout-demi';
-      } else {
+      } else if (simPhase === 'knockout-demi') {
+        if (finalWin) {
+          const next = drawOpponent(FINALE_BAND, nextUsedOpponents);
+          nextUsedOpponents.add(next);
+          nextCurrentOpponent = next;
+          nextSimPhase = 'knockout-finale';
+        } else {
+          nextSimPhase = 'over';
+          nextTournamentResult = 'demi';
+          nextCurrentOpponent = null;
+        }
+      } else if (simPhase === 'knockout-finale') {
         nextSimPhase = 'over';
-        nextTournamentResult = 'quart';
+        nextTournamentResult = finalWin ? 'champion' : 'finaliste';
         nextCurrentOpponent = null;
       }
-    } else if (simPhase === 'knockout-demi') {
-      if (result.win) {
-        const next = drawOpponent(FINALE_BAND, nextUsedOpponents);
-        nextUsedOpponents.add(next);
-        nextCurrentOpponent = next;
-        nextSimPhase = 'knockout-finale';
-      } else {
-        nextSimPhase = 'over';
-        nextTournamentResult = 'demi';
-        nextCurrentOpponent = null;
-      }
-    } else if (simPhase === 'knockout-finale') {
-      nextSimPhase = 'over';
-      nextTournamentResult = result.win ? 'champion' : 'finaliste';
-      nextCurrentOpponent = null;
-    }
-    const commitCDM = () => {
       setMatchLog(newLog);
       setSimPhase(nextSimPhase);
       if (nextTournamentResult) setTournamentResult(nextTournamentResult);
       setCurrentOpponent(nextCurrentOpponent);
       setUsedOpponents(nextUsedOpponents);
       setMatchAnim(null);
-    };
+    }
+
+    // Résolution du choix money-time (bouton en LIVE, ou auto-résolu en FAST)
+    function handleMoneyTimeChoice(mt, choice) {
+      const {
+        points,
+        events,
+        message,
+        success,
+        flipped
+      } = resolveMoneyTime(mt, choice);
+      const finalMy = result.myScore + points;
+      const finalOpp = result.oppScore;
+      const finalWin = finalMy > finalOpp;
+      if (simMode) {
+        setMatchAnim(prev => prev ? {
+          ...prev,
+          visibleEvents: [...prev.visibleEvents, ...events],
+          myScore: (prev.myScore || 0) + points,
+          myFinal: finalMy,
+          oppFinal: finalOpp,
+          win: finalWin,
+          moneyTime: null,
+          onChoice: null,
+          moneyTimeResult: {
+            message,
+            success,
+            flipped
+          }
+        } : prev);
+        setTimeout(() => finalizeMatch(finalMy, finalOpp, finalWin), 2400);
+      } else {
+        finalizeMatch(finalMy, finalOpp, finalWin);
+      }
+    }
     if (!simMode) {
-      commitCDM();
+      const mt = buildMoneyTime(result.myScore, result.oppScore, currentOpponent);
+      if (!mt) {
+        finalizeMatch(result.myScore, result.oppScore, result.win);
+        return;
+      }
+      const choice = mt.deficit === 1 || mt.deficit === 2 ? 'safe' : mt.tryRate > 0.5 ? 'risk' : 'safe';
+      handleMoneyTimeChoice(mt, choice);
       return;
     }
     const poolIdx2 = matchLog.filter(m => m.stage.startsWith('Poule')).length;
@@ -2238,9 +2404,24 @@ function App() {
       win: result.win,
       oppName: TEAMS[currentOpponent]?.nom,
       stageLabel: animLbl,
-      isLegend: false
+      isLegend: false,
+      moneyTime: null,
+      onChoice: null,
+      moneyTimeResult: null
     });
-    runAnimation(allEvts, setMatchAnim, commitCDM);
+    function onAnimationDone() {
+      const mt = buildMoneyTime(result.myScore, result.oppScore, currentOpponent);
+      if (mt) {
+        setMatchAnim(prev => prev ? {
+          ...prev,
+          moneyTime: mt,
+          onChoice: choice => handleMoneyTimeChoice(mt, choice)
+        } : prev);
+      } else {
+        finalizeMatch(result.myScore, result.oppScore, result.win);
+      }
+    }
+    runAnimation(allEvts, setMatchAnim, onAnimationDone);
   }
   const TOURNAMENT_LABEL = {
     poule: 'Sorti en poule',
@@ -2255,11 +2436,11 @@ function App() {
     try {
       // Préparer le XV complet
       const slotsData = slots.map(s => ({
-        pos: s.label,
+        pos: s.pos,
         player: s.player ? {
-          name: s.player[0],
-          note: s.player[1],
-          teamKey: s.teamKey || null
+          name: s.player.nom,
+          note: s.player.note,
+          teamKey: s.team || null
         } : null
       }));
       const res = await fetch('/api/chelem', {
@@ -2296,26 +2477,18 @@ function App() {
     const oppKey = LEGEND_CHAMPIONS[legendIndex];
     const oppAvg = TEAM_AVG[oppKey];
     const result = simulateMatch(avg, oppAvg, 12);
-    const entry = {
-      oppKey,
-      index: legendIndex,
-      oppAvg,
-      ...result,
-      stage: `Légende ${legendIndex + 1}`
-    };
-    const newLog = [...legendLog, entry];
     const isLast = legendIndex >= LEGEND_CHAMPIONS.length - 1;
-    const commitLegend = () => {
-      setLegendLog(newLog);
-      if (isLast) {
-        setLegendPhase('over');
-        setLegendDone(true);
-        setLegendResult(newLog.filter(m => m.win).length);
-      } else {
-        setLegendIndex(legendIndex + 1);
-      }
-    };
-    const commitLeg = () => {
+    function finalizeLegend(finalMy, finalOpp, finalWin) {
+      const entry = {
+        oppKey,
+        index: legendIndex,
+        oppAvg,
+        myScore: finalMy,
+        oppScore: finalOpp,
+        win: finalWin,
+        stage: `Légende ${legendIndex + 1}`
+      };
+      const newLog = [...legendLog, entry];
       setLegendLog(newLog);
       if (isLast) {
         setLegendPhase('over');
@@ -2325,9 +2498,47 @@ function App() {
         setLegendIndex(legendIndex + 1);
       }
       setTimeout(() => setMatchAnim(null), 200);
-    };
+    }
+    function handleMoneyTimeChoice(mt, choice) {
+      const {
+        points,
+        events,
+        message,
+        success,
+        flipped
+      } = resolveMoneyTime(mt, choice);
+      const finalMy = result.myScore + points;
+      const finalOpp = result.oppScore;
+      const finalWin = finalMy > finalOpp;
+      if (simMode) {
+        setMatchAnim(prev => prev ? {
+          ...prev,
+          visibleEvents: [...prev.visibleEvents, ...events],
+          myScore: (prev.myScore || 0) + points,
+          myFinal: finalMy,
+          oppFinal: finalOpp,
+          win: finalWin,
+          moneyTime: null,
+          onChoice: null,
+          moneyTimeResult: {
+            message,
+            success,
+            flipped
+          }
+        } : prev);
+        setTimeout(() => finalizeLegend(finalMy, finalOpp, finalWin), 2400);
+      } else {
+        finalizeLegend(finalMy, finalOpp, finalWin);
+      }
+    }
     if (!simMode) {
-      commitLeg();
+      const mt = buildMoneyTime(result.myScore, result.oppScore, oppKey);
+      if (!mt) {
+        finalizeLegend(result.myScore, result.oppScore, result.win);
+        return;
+      }
+      const choice = mt.deficit === 1 || mt.deficit === 2 ? 'safe' : mt.tryRate > 0.5 ? 'risk' : 'safe';
+      handleMoneyTimeChoice(mt, choice);
       return;
     }
     const lEvts = generateMatchEvents(result.myScore, result.oppScore, slots, TEAMS[oppKey]?.joueurs);
@@ -2346,9 +2557,24 @@ function App() {
       win: result.win,
       oppName: TEAMS[oppKey]?.nom,
       stageLabel: `Légende ${legendIndex + 1} / 10`,
-      isLegend: true
+      isLegend: true,
+      moneyTime: null,
+      onChoice: null,
+      moneyTimeResult: null
     });
-    runAnimation(allLEvts, setMatchAnim, commitLeg);
+    function onAnimationDone() {
+      const mt = buildMoneyTime(result.myScore, result.oppScore, oppKey);
+      if (mt) {
+        setMatchAnim(prev => prev ? {
+          ...prev,
+          moneyTime: mt,
+          onChoice: choice => handleMoneyTimeChoice(mt, choice)
+        } : prev);
+      } else {
+        finalizeLegend(result.myScore, result.oppScore, result.win);
+      }
+    }
+    runAnimation(allLEvts, setMatchAnim, onAnimationDone);
   }
   function poulesState() {
     const poolMatches = matchLog.filter(m => m.stage.startsWith('Poule'));
@@ -2782,7 +3008,7 @@ function App() {
           color: 'rgba(244,239,226,0.6)'
         }
       }, e.rMy, "–", e.rOpp)));
-    })), scoreEvts.length === 0 && /*#__PURE__*/React.createElement("div", {
+    })), scoreEvts.length === 0 && !matchAnim.moneyTime && !matchAnim.moneyTimeResult && /*#__PURE__*/React.createElement("div", {
       style: {
         display: 'flex',
         gap: 8,
@@ -2798,7 +3024,132 @@ function App() {
         background: 'rgba(201,168,95,0.4)',
         opacity: 0.5
       }
-    }))))));
+    }))), matchAnim.moneyTime && (() => {
+      const mt = matchAnim.moneyTime;
+      return /*#__PURE__*/React.createElement("div", {
+        style: {
+          marginTop: 20,
+          padding: '20px 16px',
+          background: 'linear-gradient(160deg, rgba(201,168,95,0.1), rgba(201,168,95,0.03))',
+          border: '1px solid rgba(201,168,95,0.4)',
+          borderRadius: 12,
+          boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          height: 1,
+          background: 'linear-gradient(90deg,transparent,rgba(201,168,95,0.5),transparent)',
+          marginBottom: 12
+        }
+      }), /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontFamily: BODY,
+          fontSize: 9,
+          letterSpacing: '.22em',
+          textTransform: 'uppercase',
+          color: '#C9A85F',
+          marginBottom: 4,
+          textAlign: 'center',
+          opacity: 0.75
+        }
+      }, "Dernière action"), /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontFamily: SERIF,
+          fontWeight: 700,
+          fontSize: 17,
+          color: C.cream,
+          textAlign: 'center',
+          marginBottom: 18
+        }
+      }, mt.headerLabel), /*#__PURE__*/React.createElement("div", {
+        style: {
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 9
+        }
+      }, /*#__PURE__*/React.createElement("button", {
+        onClick: () => matchAnim.onChoice && matchAnim.onChoice('safe'),
+        style: {
+          padding: '14px 16px',
+          borderRadius: 9,
+          border: '1px solid rgba(201,168,95,0.5)',
+          background: 'rgba(201,168,95,0.1)',
+          cursor: 'pointer',
+          textAlign: 'left'
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontFamily: SERIF,
+          fontWeight: 700,
+          fontSize: 15,
+          color: '#F4EFE2',
+          marginBottom: 3
+        }
+      }, mt.safeLabel, " ", /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontFamily: BODY,
+          fontWeight: 600,
+          fontSize: 11,
+          color: '#C9A85F'
+        }
+      }, "· 3 pts")), /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontFamily: BODY,
+          fontSize: 11,
+          color: 'rgba(244,239,226,0.6)'
+        }
+      }, mt.safeSub)), /*#__PURE__*/React.createElement("button", {
+        onClick: () => matchAnim.onChoice && matchAnim.onChoice('risk'),
+        style: {
+          padding: '14px 16px',
+          borderRadius: 9,
+          border: '1px solid rgba(123,168,196,0.5)',
+          background: 'rgba(123,168,196,0.1)',
+          cursor: 'pointer',
+          textAlign: 'left'
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontFamily: SERIF,
+          fontWeight: 700,
+          fontSize: 15,
+          color: '#F4EFE2'
+        }
+      }, mt.riskLabel, " ", /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontFamily: BODY,
+          fontWeight: 600,
+          fontSize: 11,
+          color: '#7BA8C4'
+        }
+      }, "· 5/7 pts")))));
+    })(), matchAnim.moneyTimeResult && (() => {
+      const r = matchAnim.moneyTimeResult;
+      const tone = r.flipped ? '#C9A85F' : r.success ? 'rgba(244,239,226,0.75)' : '#c0504d';
+      return /*#__PURE__*/React.createElement("div", {
+        style: {
+          marginTop: 20,
+          padding: '22px 18px',
+          textAlign: 'center',
+          background: r.flipped ? 'rgba(201,168,95,0.08)' : 'rgba(244,239,226,0.03)',
+          border: `1px solid ${r.flipped ? 'rgba(201,168,95,0.4)' : 'rgba(244,239,226,0.12)'}`,
+          borderRadius: 12
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontSize: 22,
+          marginBottom: 10
+        }
+      }, r.flipped ? '🏆' : r.success ? '◐' : '✕'), /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontFamily: SERIF,
+          fontWeight: 700,
+          fontSize: 16,
+          lineHeight: 1.4,
+          color: tone
+        }
+      }, r.message));
+    })())));
   })() : null;
   return /*#__PURE__*/React.createElement("div", {
     style: {
