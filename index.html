@@ -189,45 +189,98 @@ footer{background:var(--fird);padding:32px;text-align:center;border-top:1px soli
 }
 
 /* ── HALL OF FAME ── */
-.hof{background:var(--ink);color:var(--cream);padding:72px 32px;}
-.hof-in{max-width:640px;margin:0 auto;}
-.hof-title{font-family:'Cormorant Garamond';font-weight:700;font-size:clamp(28px,4.5vw,40px);
-  color:var(--camel);margin-bottom:8px;line-height:1.1;}
+.hof{background:var(--ink);color:var(--cream);padding:80px 20px;}
+.hof-in{max-width:600px;margin:0 auto;}
+.hof-title{font-family:'Cormorant Garamond';font-weight:700;font-size:clamp(32px,5vw,44px);
+  color:var(--camel);margin-bottom:8px;line-height:1.05;}
 .hof-sub{font-family:'Spectral';font-style:italic;font-size:15px;color:var(--sand);
-  opacity:.7;margin-bottom:32px;}
-.hof-list{display:flex;flex-direction:column;}
-.hof-entry{border-bottom:1px solid rgba(201,168,95,0.12);}
-.hof-header{display:flex;align-items:center;justify-content:space-between;
-  padding:14px 0;cursor:pointer;user-select:none;}
+  opacity:.65;margin-bottom:36px;}
+.hof-list{display:flex;flex-direction:column;gap:12px;}
+
+/* Carte principale */
+.hof-entry{
+  background:linear-gradient(160deg,rgba(29,58,44,.8),rgba(15,36,23,.95));
+  border:1px solid rgba(201,168,95,.2);
+  border-top:2px solid rgba(201,168,95,.6);
+  border-radius:10px;
+  overflow:hidden;
+  transition:border-color .2s;
+}
+.hof-entry:hover{border-color:rgba(201,168,95,.45);border-top-color:var(--camel);}
+
+/* Header de carte */
+.hof-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 18px;cursor:pointer;user-select:none;
+}
+.hof-left{display:flex;align-items:center;gap:14px;}
+.hof-rank{
+  font-family:'Cormorant Garamond';font-weight:700;font-size:13px;
+  color:rgba(201,168,95,.45);width:20px;flex-shrink:0;
+}
+.hof-name{
+  font-family:'Cormorant Garamond';font-weight:700;font-size:21px;
+  color:var(--cream);letter-spacing:.01em;transition:color .15s;
+}
 .hof-header:hover .hof-name{color:var(--camel);}
-.hof-left{display:flex;align-items:baseline;gap:12px;}
-.hof-name{font-family:'Cormorant Garamond';font-weight:700;font-size:22px;
-  color:var(--cream);transition:color .15s;}
-.hof-avg{font-family:'Cormorant Garamond';font-weight:600;font-size:16px;color:var(--camel);}
+.hof-avg{
+  font-family:'Cormorant Garamond';font-weight:600;font-size:26px;
+  color:var(--camel);line-height:1;
+}
 .hof-right{display:flex;align-items:center;gap:10px;}
-.hof-date{font-family:'Inter';font-size:10px;color:var(--sand);opacity:.5;
-  letter-spacing:.08em;}
-.hof-arrow{font-size:11px;color:var(--camel);opacity:.6;transition:transform .2s;}
+.hof-date{font-family:'Inter';font-size:9px;color:var(--sand);opacity:.4;letter-spacing:.1em;}
+.hof-arrow{font-size:14px;color:var(--camel);opacity:.5;transition:transform .25s;}
 .hof-arrow.open{transform:rotate(90deg);}
-.hof-body{display:none;padding:0 0 16px;}
+
+/* Corps accordéon */
+.hof-body{
+  display:none;
+  padding:0 18px 18px;
+  border-top:1px solid rgba(201,168,95,.1);
+}
 .hof-body.open{display:block;}
-.hof-xv{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;margin-bottom:14px;}
-.hof-xv-col{}
-.hof-xv-label{font-family:'Inter';font-size:9px;letter-spacing:.15em;text-transform:uppercase;
-  color:var(--camel);opacity:.6;padding:10px 0 6px;border-bottom:1px solid rgba(201,168,95,0.15);
-  margin-bottom:4px;}
-.hof-player{display:flex;align-items:baseline;justify-content:space-between;
-  padding:5px 0;border-bottom:1px solid rgba(201,168,95,0.06);}
-.hof-player-num{font-family:'Inter';font-size:9px;color:var(--sand);opacity:.35;
-  width:14px;flex-shrink:0;}
-.hof-player-name{flex:1;font-family:'Spectral';font-size:13px;color:var(--cream);
-  margin:0 8px;line-height:1.3;}
-.hof-player-note{font-family:'Inter';font-size:11px;font-weight:600;color:var(--camel);}
-.hof-empty{font-family:'Spectral';font-style:italic;font-size:14px;
-  color:var(--sand);opacity:.5;padding:20px 0;text-align:center;}
-.hof-loading{font-family:'Inter';font-size:12px;color:var(--sand);opacity:.4;
-  padding:20px 0;text-align:center;}
-.hof-admin-btn{background:#8B3A3A;color:#fff;border:none;border-radius:4px;
+
+/* XV */
+.hof-xv{display:grid;grid-template-columns:1fr 1fr;gap:0 20px;margin-bottom:14px;margin-top:14px;}
+.hof-xv-label{
+  font-family:'Inter';font-size:8px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--camel);opacity:.55;padding:8px 0 5px;
+  border-bottom:1px solid rgba(201,168,95,.15);margin-bottom:2px;
+}
+.hof-player{
+  display:flex;align-items:baseline;padding:5px 0;
+  border-bottom:1px solid rgba(255,255,255,.04);
+}
+.hof-player-num{
+  font-family:'Inter';font-size:8px;color:var(--sand);opacity:.25;
+  width:14px;flex-shrink:0;
+}
+.hof-player-name{
+  flex:1;font-family:'Spectral';font-size:12.5px;color:rgba(244,239,226,.85);
+  margin:0 6px;line-height:1.3;
+}
+.hof-player-note{
+  font-family:'Inter';font-size:10.5px;font-weight:700;color:var(--camel);
+}
+
+/* Log */
+.hof-log{margin-top:12px;border-top:1px solid rgba(201,168,95,.1);padding-top:10px;}
+.hof-log-row{
+  display:flex;align-items:center;gap:8px;
+  padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);
+  font-family:'Inter';font-size:10px;
+}
+.hof-log-vic{font-size:8px;font-weight:700;letter-spacing:.1em;color:#6aaa7a;width:8px;flex-shrink:0;}
+.hof-log-def{font-size:8px;font-weight:700;letter-spacing:.1em;color:#c0504d;width:8px;flex-shrink:0;}
+.hof-log-opp{flex:1;color:rgba(216,201,160,.75);}
+.hof-log-score{color:var(--cream);font-weight:600;}
+
+/* États */
+.hof-empty{font-family:'Spectral';font-style:italic;font-size:15px;
+  color:var(--sand);opacity:.5;padding:32px 0;text-align:center;}
+.hof-loading{font-family:'Inter';font-size:11px;color:var(--sand);opacity:.35;
+  padding:32px 0;text-align:center;letter-spacing:.1em;}
+.hof-admin-btn{background:rgba(139,58,58,.7);color:#fff;border:none;border-radius:4px;
   padding:3px 8px;cursor:pointer;font-size:10px;flex-shrink:0;}
 </style>
 </head>
@@ -246,10 +299,10 @@ footer{background:var(--fird);padding:32px;text-align:center;border-top:1px soli
   <p class="h-lead">Un tirage. Une nation. Une Coupe du Monde.</p>
   <a href="jeu.html" class="h-cta">Commence ta draft</a>
   <div class="strip">
-    <div class="s-item"><div class="s-n">148</div><div class="s-l">Squads</div></div>
-    <div class="s-item"><div class="s-n">1 845</div><div class="s-l">Joueurs</div></div>
-    <div class="s-item"><div class="s-n">10</div><div class="s-l">Éditions</div></div>
-    <div class="s-item"><div class="s-n">33</div><div class="s-l">Nations</div></div>
+    <div class="s-item"><div class="s-n" data-target="148">148</div><div class="s-l">Squads</div></div>
+    <div class="s-item"><div class="s-n" data-target="1845">1 845</div><div class="s-l">Joueurs</div></div>
+    <div class="s-item"><div class="s-n" data-target="10">10</div><div class="s-l">Éditions</div></div>
+    <div class="s-item"><div class="s-n" data-target="33">33</div><div class="s-l">Nations</div></div>
   </div>
 </header>
 
@@ -421,9 +474,9 @@ footer{background:var(--fird);padding:32px;text-align:center;border-top:1px soli
     const xvPlayers = e.xv || [];
     const avants = xvPlayers.slice(0,8);
     const arrieres = xvPlayers.slice(8,15);
-    const renderCol = (players, start) => players.map((p, i) =>
+    const renderCol = (players, start) => players.map((p, idx) =>
       `<div class="hof-player">
-        <span class="hof-player-num">${start+i}</span>
+        <span class="hof-player-num">${start+idx}</span>
         <span class="hof-player-name">${p.name ? escHtml(p.name) : '—'}</span>
         <span class="hof-player-note">${p.note||''}</span>
       </div>`
@@ -440,15 +493,14 @@ footer{background:var(--fird);padding:32px;text-align:center;border-top:1px soli
         </div>
       </div>` : '';
 
-    const logHtml = e.log ? e.log.map(m =>
-      `<div style="display:flex;justify-content:space-between;font-family:'Inter';
-        font-size:10px;padding:3px 0;border-bottom:1px solid rgba(201,168,95,0.08);">
-        <span style="color:var(--camel);font-size:9px;">✓</span>
-        <span style="flex:1;margin:0 8px;color:var(--sand);opacity:.8;">
-          ${escHtml(LEGENDS[m.opp]||m.opp)}</span>
-        <span style="color:var(--cream)">${m.my}–${m.opp_s}</span>
-      </div>`
-    ).join('') : '';
+    const logHtml = e.log ? `<div class="hof-log">` + e.log.map(m => {
+      const win = m.my > m.opp_s;
+      return `<div class="hof-log-row">
+        <span class="${win ? 'hof-log-vic' : 'hof-log-def'}">${win ? 'V' : 'D'}</span>
+        <span class="hof-log-opp">${escHtml(LEGENDS[m.opp]||m.opp)}</span>
+        <span class="hof-log-score">${m.my}–${m.opp_s}</span>
+      </div>`;
+    }).join('') + `</div>` : '';
 
     const adminBtn = isAdmin
       ? `<button class="hof-admin-btn" onclick="delEntry(${i},'${adminKey}')">✕</button>`
@@ -458,19 +510,18 @@ footer{background:var(--fird);padding:32px;text-align:center;border-top:1px soli
       <div class="hof-entry">
         <div class="hof-header" onclick="toggleHof(${i})">
           <div class="hof-left">
+            <span class="hof-rank">${i+1}</span>
             <div class="hof-name">${escHtml(e.name)}</div>
-            <div class="hof-avg">${e.avg}</div>
           </div>
           <div class="hof-right">
-            <div class="hof-date">${e.date||''}</div>
+            <div class="hof-avg">${e.avg}</div>
+            <div class="hof-date">${(e.date||'').slice(0,10).split('-').reverse().join('/')}</div>
             ${adminBtn}
             <span class="hof-arrow" id="arr-${i}">›</span>
           </div>
         </div>
         <div class="hof-body" id="body-${i}">
-          ${xvHtml}
-          ${logHtml ? `<div style="margin-top:8px;border-top:1px solid rgba(201,168,95,0.1);
-            padding-top:8px;">${logHtml}</div>` : ''}
+          ${xvHtml}${logHtml}
         </div>
       </div>`;
   }
@@ -511,6 +562,31 @@ footer{background:var(--fird);padding:32px;text-align:center;border-top:1px soli
   }
 
   loadHof();
+
+  // Compteur animé pour les stats
+  function animateCount(el, target, duration) {
+    const start = performance.now();
+    const isFloat = target % 1 !== 0;
+    const step = (now) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      const val = Math.round(ease * target);
+      el.textContent = val >= 1000 ? (Math.floor(val/1000) + ' ' + String(val%1000).padStart(3,'0')) : val;
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+  const stripObs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const el = entry.target;
+      const val = parseInt(el.dataset.target, 10);
+      animateCount(el, val, 1200);
+      stripObs.unobserve(el);
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('.s-n[data-target]').forEach(el => stripObs.observe(el));
 })();
 </script>
 </body>
