@@ -4,7 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>ScrumDraft — Draft de légende</title>
-<meta name="description" content="Un tirage. Une nation. Une Coupe du Monde. 123 squads, 1845 joueurs, 1987–2023.">
+<meta property="og:title" content="ScrumDraft — Compose ton XV de légende">
+<meta property="og:description" content="Draft un XV parmi 148 équipes de Coupe du Monde. 1987–2023.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://scrumdraft.pages.dev">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ScrumDraft — Compose ton XV de légende">
+<meta name="twitter:description" content="Draft un XV parmi 148 équipes de Coupe du Monde. 1987–2023.">
+<meta name="description" content="Un tirage. Une nation. Une Coupe du Monde. 148 squads, 1987–2023.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;0,600;0,700;1,400;1,500;1,600&family=Inter:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
@@ -148,8 +155,8 @@ body{font-family:'Inter',sans-serif;background:var(--fird);color:var(--cream);}
 /* MANIFESTO */
 .mani{
   background:var(--fir);padding:88px 32px;text-align:center;
-  border-top:1px solid rgba(201,168,95,.12);
-  border-bottom:1px solid rgba(201,168,95,.12);
+  border-top:3px solid rgba(201,168,95,.35);
+  border-bottom:3px solid rgba(201,168,95,.35);
 }
 @media(max-width:640px){.mani{padding:64px 24px;}}
 .mani-q{
@@ -170,13 +177,14 @@ body{font-family:'Inter',sans-serif;background:var(--fird);color:var(--cream);}
 .final-h em{color:var(--camel);font-style:italic;}
 .final-p{font-family:'Spectral';font-size:17px;color:var(--sand);max-width:400px;margin:20px auto 40px;line-height:1.6;opacity:.85;}
 .final-btn{
-  display:inline-block;background:var(--camel);color:var(--fir);
-  padding:17px 42px;border-radius:7px;
+  display:inline-block;background:transparent;color:var(--camel);
+  border:2px solid var(--camel);
+  padding:15px 42px;border-radius:7px;
   font-weight:700;font-size:14px;letter-spacing:.05em;
   text-decoration:none;text-transform:uppercase;
-  transition:background .18s,transform .15s;
+  transition:all .18s;
 }
-.final-btn:hover{background:var(--camlt);transform:translateY(-2px);}
+.final-btn:hover{background:var(--camel);color:var(--fir);transform:translateY(-2px);}
 
 /* FOOTER */
 footer{background:var(--fird);padding:32px;text-align:center;border-top:1px solid rgba(201,168,95,.1);}
@@ -215,9 +223,8 @@ footer{background:var(--fird);padding:32px;text-align:center;border-top:1px soli
   margin-bottom:14px;letter-spacing:.02em;
 }
 .leg-desc{
-  font-family:'Spectral';font-size:13px;
-  color:var(--sand);opacity:.5;line-height:1.6;
-  letter-spacing:.04em;text-transform:uppercase;
+  font-family:'Spectral';font-style:italic;font-size:14px;
+  color:var(--sand);opacity:.65;line-height:1.6;
 }
 
 /* ── HALL OF FAME ── */
@@ -368,7 +375,7 @@ footer{background:var(--fird);padding:32px;text-align:center;border-top:1px soli
   <div class="eds-in">
     <div class="eds-header">
       <div class="eyebrow">Ce qui t'attend</div>
-      <h2 class="eds-h2">Des squads qui ont<br>écrit l'Histoire</h2>
+      <h2 class="eds-h2">Des squads qui ont écrit l'Histoire</h2>
       <p class="eds-sub">Un aperçu. Cent quarante-huit squads t'attendent dans le jeu.</p>
     </div>
     <div class="eds-grid">
