@@ -29,15 +29,30 @@ body{font-family:'Inter',sans-serif;background:var(--fird);color:var(--cream);}
 
 /* HERO */
 .hero{
-  min-height:88vh;display:flex;flex-direction:column;justify-content:center;
-  padding:80px 32px 56px;text-align:center;
-  background:radial-gradient(ellipse 100% 80% at 50% -10%, var(--fir2) 0%, var(--fird) 65%);
+  min-height:90vh;display:flex;flex-direction:column;justify-content:center;
+  padding:80px 24px 52px;text-align:center;
+  background:radial-gradient(ellipse 120% 90% at 50% -5%, var(--fir2) 0%, var(--fird) 60%);
   position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='380' viewBox='0 0 600 380'%3E%3Crect x='30' y='20' width='540' height='340' fill='none' stroke='%23c9a85f' stroke-width='1.5' opacity='.1'/%3E%3Crect x='30' y='20' width='56' height='340' fill='none' stroke='%23c9a85f' stroke-width='1' opacity='.07'/%3E%3Crect x='514' y='20' width='56' height='340' fill='none' stroke='%23c9a85f' stroke-width='1' opacity='.07'/%3E%3Cline x1='86' y1='20' x2='86' y2='360' stroke='%23c9a85f' stroke-width='1.2' opacity='.11'/%3E%3Cline x1='514' y1='20' x2='514' y2='360' stroke='%23c9a85f' stroke-width='1.2' opacity='.11'/%3E%3Cline x1='204' y1='20' x2='204' y2='360' stroke='%23c9a85f' stroke-width='1' opacity='.08'/%3E%3Cline x1='396' y1='20' x2='396' y2='360' stroke='%23c9a85f' stroke-width='1' opacity='.08'/%3E%3Cline x1='246' y1='20' x2='246' y2='360' stroke='%23c9a85f' stroke-width='.8' opacity='.05'/%3E%3Cline x1='354' y1='20' x2='354' y2='360' stroke='%23c9a85f' stroke-width='.8' opacity='.05'/%3E%3Cline x1='300' y1='20' x2='300' y2='360' stroke='%23c9a85f' stroke-width='1.2' opacity='.1'/%3E%3Cline x1='86' y1='158' x2='86' y2='222' stroke='%23c9a85f' stroke-width='2' opacity='.14'/%3E%3Cline x1='70' y1='168' x2='70' y2='212' stroke='%23c9a85f' stroke-width='1.8' opacity='.12'/%3E%3Cline x1='102' y1='168' x2='102' y2='212' stroke='%23c9a85f' stroke-width='1.8' opacity='.12'/%3E%3Cline x1='70' y1='180' x2='102' y2='180' stroke='%23c9a85f' stroke-width='1.8' opacity='.12'/%3E%3Cline x1='514' y1='158' x2='514' y2='222' stroke='%23c9a85f' stroke-width='2' opacity='.14'/%3E%3Cline x1='498' y1='168' x2='498' y2='212' stroke='%23c9a85f' stroke-width='1.8' opacity='.12'/%3E%3Cline x1='530' y1='168' x2='530' y2='212' stroke='%23c9a85f' stroke-width='1.8' opacity='.12'/%3E%3Cline x1='498' y1='180' x2='530' y2='180' stroke='%23c9a85f' stroke-width='1.8' opacity='.12'/%3E%3C/svg%3E");
+  background-size:cover;background-position:center;
+  pointer-events:none;
 }
 .hero::after{
   content:'';position:absolute;
-  bottom:-1px;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(201,168,95,.25),transparent);
+  bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,168,95,.3),transparent);
+}
+@media(max-width:640px){
+  .hero{min-height:85vh;padding:64px 20px 44px;}
+  .h-era{font-size:12px;margin-bottom:20px;}
+  .h1{font-size:clamp(52px,16vw,80px);}
+  .h-lead{font-size:15px;margin-top:20px;}
+  .h-cta{margin-top:32px;padding:15px 32px;font-size:13px;}
+  .strip{margin-top:44px;}
+  .s-n{font-size:28px;}
 }
 .h-era{
   font-family:'Spectral';font-style:italic;font-size:15px;
@@ -68,12 +83,13 @@ body{font-family:'Inter',sans-serif;background:var(--fird);color:var(--cream);}
 /* STRIP */
 .strip{
   display:flex;justify-content:center;
-  margin-top:64px;
+  margin-top:56px;
   border-top:1px solid rgba(201,168,95,.14);
   border-bottom:1px solid rgba(201,168,95,.14);
+  position:relative;z-index:1;
 }
 .s-item{
-  padding:20px 0;text-align:center;
+  padding:18px 0;text-align:center;
   flex:1;max-width:180px;
   border-right:1px solid rgba(201,168,95,.12);
 }
@@ -82,7 +98,21 @@ body{font-family:'Inter',sans-serif;background:var(--fird);color:var(--cream);}
 .s-l{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--sand);opacity:.6;margin-top:5px;}
 
 /* EDITIONS */
-.editions{background:var(--cream);color:var(--ink);padding:88px 32px;}
+.editions{
+  background:var(--cream);color:var(--ink);padding:88px 32px;
+  border-top:1px solid transparent;
+  background-clip:padding-box;
+  position:relative;
+}
+.editions::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,transparent 5%,rgba(201,168,95,.5) 30%,rgba(201,168,95,.8) 50%,rgba(201,168,95,.5) 70%,transparent 95%);
+}
+@media(max-width:640px){
+  .editions{padding:64px 20px;}
+}
+.ed{opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease;}
+.ed.visible{opacity:1;transform:none;}
 .eds-in{max-width:1060px;margin:0 auto;}
 .eds-header{margin-bottom:52px;}
 .eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--camel);font-weight:700;margin-bottom:10px;}
@@ -118,9 +148,10 @@ body{font-family:'Inter',sans-serif;background:var(--fird);color:var(--cream);}
 /* MANIFESTO */
 .mani{
   background:var(--fir);padding:88px 32px;text-align:center;
-  border-top:1px solid rgba(201,168,95,.1);
-  border-bottom:1px solid rgba(201,168,95,.1);
+  border-top:1px solid rgba(201,168,95,.12);
+  border-bottom:1px solid rgba(201,168,95,.12);
 }
+@media(max-width:640px){.mani{padding:64px 24px;}}
 .mani-q{
   font-family:'Cormorant Garamond';font-weight:600;font-style:italic;
   font-size:clamp(22px,3.8vw,36px);line-height:1.3;color:var(--cream);
@@ -131,6 +162,7 @@ body{font-family:'Inter',sans-serif;background:var(--fird);color:var(--cream);}
 
 /* FINAL CTA */
 .final{background:var(--fird);padding:96px 32px;text-align:center;}
+@media(max-width:640px){.final{padding:72px 20px;}}
 .final-h{
   font-family:'Cormorant Garamond';font-weight:700;
   font-size:clamp(38px,6.5vw,68px);line-height:.95;
@@ -341,99 +373,63 @@ footer{background:var(--fird);padding:32px;text-align:center;border-top:1px soli
     </div>
     <div class="eds-grid">
 <div class="ed">
+        <div class="ed-yr">1987</div>
+        <div>
+          <div class="ed-nat">Nouvelle-Zélande</div>          <div class="ed-txt">La première. Les All Blacks dominent de bout en bout. Grant Fox marque 126 points au total.</div>
+        </div>
+      </div>
+<div class="ed">
         <div class="ed-yr">1991</div>
         <div>
-          <div class="ed-nat">Australie</div>
-          <div class="ed-res">Champion du Monde</div>
-          <div class="ed-txt">Campese dans tous ses éclats. Farr-Jones, Lynagh. L'apogée.</div>
+          <div class="ed-nat">Australie</div>          <div class="ed-txt">Campese, un essai de génie en demi. Avec Lynagh et Farr-Jones, l'Australie s'impose à Twickenham.</div>
         </div>
       </div>
 <div class="ed">
         <div class="ed-yr">1995</div>
         <div>
-          <div class="ed-nat">Afrique du Sud</div>
-          <div class="ed-res">Champion du Monde</div>
-          <div class="ed-txt">Mandela en jersey 6. Pienaar, Stransky, le drop. La renaissance d'un peuple.</div>
-        </div>
-      </div>
-<div class="ed">
-        <div class="ed-yr">1995</div>
-        <div>
-          <div class="ed-nat">Nouvelle-Zélande</div>
-          <div class="ed-res">Finaliste</div>
-          <div class="ed-txt">Lomu, 20 ans. Quatre essais contre l'Angleterre en demi. Intouchable.</div>
+          <div class="ed-nat">Afrique du Sud</div>          <div class="ed-txt">Avec Mandela en premier supporter, un drop de Stransky, l'Afrique du Sud de Pienaar s'impose malgré le doublé de Lomu.</div>
         </div>
       </div>
 <div class="ed">
         <div class="ed-yr">1999</div>
         <div>
-          <div class="ed-nat">Australie</div>
-          <div class="ed-res">Champion du Monde</div>
-          <div class="ed-txt">Horan, Gregan, Larkham. Le doublé. L'apogée silencieuse.</div>
+          <div class="ed-nat">Australie</div>          <div class="ed-txt">Gregan, Larkham, Horan pour le doublé australien, plus discret que le premier, tout aussi solide.</div>
         </div>
       </div>
 <div class="ed">
         <div class="ed-yr">2003</div>
         <div>
-          <div class="ed-nat">Angleterre</div>
-          <div class="ed-res">Champion du Monde</div>
-          <div class="ed-txt">Wilkinson. Le drop. 100 secondes qui font une légende.</div>
+          <div class="ed-nat">Angleterre</div>          <div class="ed-txt">Le drop de Wilkinson du pied droit à la dernière minute. Le reste appartient à l'histoire.</div>
         </div>
       </div>
 <div class="ed">
         <div class="ed-yr">2007</div>
         <div>
-          <div class="ed-nat">France</div>
-          <div class="ed-res">Demi-finaliste</div>
-          <div class="ed-txt">Dusautoir face aux All Blacks. 38 plaquages. Un miracle à Cardiff.</div>
-        </div>
-      </div>
-<div class="ed">
-        <div class="ed-yr">2007</div>
-        <div>
-          <div class="ed-nat">Afrique du Sud</div>
-          <div class="ed-res">Champion du Monde</div>
-          <div class="ed-txt">Habana, 8 essais. La plus grande défense de l'Histoire du tournoi.</div>
+          <div class="ed-nat">Afrique du Sud</div>          <div class="ed-txt">Habana marque 8 essais. Les Springboks écrasent tout le monde, y compris les Anglais dans une finale cadenassée.</div>
         </div>
       </div>
 <div class="ed">
         <div class="ed-yr">2011</div>
         <div>
-          <div class="ed-nat">France</div>
-          <div class="ed-res">Finaliste</div>
-          <div class="ed-txt">Dusautoir, encore. MOTM d'une finale perdue d'un point.</div>
+          <div class="ed-nat">Nouvelle-Zélande</div>          <div class="ed-txt">Après 24 ans d'attente, McCaw soulève le trophée à domicile. Un petit point d'écart en finale contre la France.</div>
         </div>
       </div>
 <div class="ed">
         <div class="ed-yr">2015</div>
         <div>
-          <div class="ed-nat">Nouvelle-Zélande</div>
-          <div class="ed-res">Champion du Monde</div>
-          <div class="ed-txt">Carter 93. McCaw, Retallick, Read. La plus grande équipe de tous les temps.</div>
+          <div class="ed-nat">Nouvelle-Zélande</div>          <div class="ed-txt">Carter en patron pour le premier back-to-back de l'histoire. Probablement la meilleure équipe jamais alignée.</div>
         </div>
       </div>
 <div class="ed">
         <div class="ed-yr">2019</div>
         <div>
-          <div class="ed-nat">Afrique du Sud</div>
-          <div class="ed-res">Champion du Monde</div>
-          <div class="ed-txt">Kolisi capitaine. Kolbe sur son aile. Du Toit partout. Le titre du peuple.</div>
+          <div class="ed-nat">Afrique du Sud</div>          <div class="ed-txt">Kolisi capitaine, Kolbe sur son aile. Les Boks battent (encore) les Anglais en finale. Troisième étoile.</div>
         </div>
       </div>
 <div class="ed">
         <div class="ed-yr">2023</div>
         <div>
-          <div class="ed-nat">France</div>
-          <div class="ed-res">Quart de finaliste</div>
-          <div class="ed-txt">Dupont. 80 000 au Stade de France. Le pays entier retient son souffle.</div>
-        </div>
-      </div>
-<div class="ed">
-        <div class="ed-yr">2023</div>
-        <div>
-          <div class="ed-nat">Irlande</div>
-          <div class="ed-res">Quart de finaliste</div>
-          <div class="ed-txt">Sexton, Furlong, van der Flier. La meilleure équipe du monde. Sorti en quart.</div>
+          <div class="ed-nat">Afrique du Sud</div>          <div class="ed-txt">Et de quatre pour les Boks face aux All Blacks en finale. La France de Dupont et l'Irlande de Sexton, favoris, sortis en quart.</div>
         </div>
       </div>
 </div>
@@ -453,7 +449,7 @@ footer{background:var(--fird);padding:32px;text-align:center;border-top:1px soli
 
 <footer>
   <div class="f-logo">Scrum<b>Draft</b></div>
-  <div class="f-copy">1987 – 2023 · 148 squads · 10 Coupes du Monde · v2026.06.23</div>
+  <div class="f-copy">1987 – 2023 · 148 squads · 10 Coupes du Monde · v2026.07.01</div>
 </footer>
 
 
@@ -587,6 +583,14 @@ footer{background:var(--fird);padding:32px;text-align:center;border-top:1px soli
     });
   }, { threshold: 0.5 });
   document.querySelectorAll('.s-n[data-target]').forEach(el => stripObs.observe(el));
+
+  // Fade-in éditions au scroll
+  const edObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); edObs.unobserve(e.target); }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.ed').forEach(el => edObs.observe(el));
 })();
 </script>
 </body>
