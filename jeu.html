@@ -2327,6 +2327,279 @@ function App() {
       message
     };
   }
+
+  // ══════════════════════════════════════════════════════════════════
+  // Temps forts vivants — chaque occasion de marquer de MON équipe est
+  // un choix (sûr / risqué), pas un tirage silencieux. L'adversaire
+  // reste généré automatiquement, inchangé.
+  // ══════════════════════════════════════════════════════════════════
+  const LIVE_FLAVORS = [
+  // ── AVANT (4) — le risqué tire sur la moyenne du pack, postes 1 à 8 ──
+  {
+    header: 'Mêlée à 5m de la ligne adverse',
+    safe: 'Tenter le drop',
+    risk: 'Départ du 8',
+    safeKind: 'drop',
+    category: 'avant',
+    fixedPos: 7 // N°8
+  }, {
+    header: 'Pénalité proche des lignes',
+    safe: 'Prendre les points',
+    risk: 'Aller en touche, jouer le ballon porté',
+    safeKind: 'pénalité',
+    category: 'avant'
+  }, {
+    header: 'Avantage, pick-and-go enchaînés aux 5m',
+    safe: 'Tenter le drop',
+    risk: 'Relancer un temps de plus au ras',
+    safeKind: 'drop',
+    category: 'avant'
+  }, {
+    header: 'Pénalité suite à effondrement de mêlée',
+    safe: 'Prendre les points',
+    risk: "Retenter la mêlée pour l'essai de pénalité",
+    safeKind: 'pénalité',
+    category: 'avant',
+    penaltyTry: true
+  },
+  // ── TROIS-QUARTS (4) — le risqué tire sur la moyenne des lignes arrières, postes 9 à 15 ──
+  {
+    header: "Position de drop, dans l'axe",
+    safe: 'Tenter le drop',
+    risk: 'Écarter, tenter l\'essai',
+    safeKind: 'drop',
+    category: '34',
+    scorerPool: 'wide' // 9 et 10 ne finissent pas une action écartée, seuls 11-15
+  }, {
+    header: 'Pénalité rapide possible',
+    safe: 'Prendre les points',
+    risk: 'Jouer vite pour marquer un essai',
+    safeKind: 'pénalité',
+    category: '34',
+    fixedPos: 8 // Mêlée / n°9
+  }, {
+    header: 'Regroupement dans les 22m, surnombre côté ouvert',
+    safe: 'Tenter le drop',
+    risk: 'Donner et jouer le surnombre extérieur',
+    safeKind: 'drop',
+    category: '34',
+    scorerPool: 'wide'
+  }, {
+    header: 'Avantage dans les 22m',
+    safe: 'Prendre les points',
+    risk: 'Écarter pour marquer un essai',
+    safeKind: 'pénalité',
+    category: '34',
+    scorerPool: 'wide'
+  }];
+
+  // Taux dérivés du XV réellement drafté, comme pour le money-time actuel.
+  function computeLiveRates(oppRoster) {
+    const kickerNote = effectiveNote(9); // poste 10, Ouverture
+    const kickRate = Math.max(0.05, Math.min(0.97, (kickerNote - 5) / 100));
+    const myBacks = slots.slice(8, 15).reduce((s, sl, i) => s + effectiveNote(8 + i), 0) / 7;
+    const myPack = slots.slice(0, 8).reduce((s, sl, i) => s + effectiveNote(i), 0) / 8;
+    const oppBacksArr = (oppRoster || []).slice(8, 15);
+    const oppBacks = oppBacksArr.reduce((s, p) => s + (p[1] || 70), 0) / Math.max(1, oppBacksArr.length);
+    const oppPackArr = (oppRoster || []).slice(0, 8);
+    const oppPack = oppPackArr.reduce((s, p) => s + (p[1] || 70), 0) / Math.max(1, oppPackArr.length);
+    const backsTryRate = Math.max(0.05, Math.min(0.97, pwin(myBacks - oppBacks)));
+    const packTryRate = Math.max(0.05, Math.min(0.97, pwin(myPack - oppPack)));
+    return {
+      kickRate,
+      backsTryRate,
+      packTryRate
+    };
+  }
+
+  // Un choix résolu -> une liste de 1 ou 2 sous-événements (essai + transfo séparée),
+  // pour rester visuellement cohérent avec la façon dont l'adversaire marque déjà.
+  function resolveLiveMoment(choice, kickRate, tryRate, safeKind, penaltyTry) {
+    if (choice === 'safe') {
+      const ok = Math.random() < kickRate;
+      const k = safeKind || 'pénalité';
+      return ok ? [{ type: k, pts: 3 }] : [{ type: k, pts: 0, missed: true }];
+    }
+    const tryOk = Math.random() < tryRate;
+    if (!tryOk) return [{ type: penaltyTry ? 'essai_penalite' : 'essai', pts: 0, missed: true }];
+    if (penaltyTry) return [{ type: 'essai_penalite', pts: 7, noScorer: true }];
+    const evs = [{ type: 'essai', pts: 5 }];
+    if (Math.random() < kickRate) evs.push({ type: 'transfo', pts: 2, quick: true });
+    return evs;
+  }
+
+  function pickMyLiveScorer(category, fixedPos, scorerPool) {
+    if (fixedPos != null) return slots[fixedPos]?.player?.nom || 'Le buteur';
+    const pool = category === 'avant' ? slots.slice(0, 8) : scorerPool === 'wide' ? slots.slice(10, 15) : slots.slice(8, 15);
+    const valid = pool.filter(s => s && s.player && s.player.nom);
+    if (!valid.length) return 'Un joueur';
+    return valid[Math.floor(Math.random() * valid.length)].player.nom;
+  }
+
+  // Construit la chronologie complète du match : l'adversaire est déjà résolu
+  // (comme aujourd'hui), mes temps forts n'ont qu'une minute réservée — leur
+  // valeur reste inconnue tant que je n'ai pas choisi.
+  function buildLiveTimeline(myTarget, oppTarget, oppRoster) {
+    const oppShape = decomposeScore(oppTarget);
+    const myShape = decomposeScore(myTarget); // sert seulement à fixer le NOMBRE de temps forts
+    const cut = a => {
+      const c = Math.floor(a.length * (0.35 + Math.random() * 0.3));
+      return [a.slice(0, c), a.slice(c)];
+    };
+    const mins = (n, b) => {
+      const vals = [];
+      let guard = 0;
+      while (vals.length < n && guard < 500) {
+        const candidate = b + Math.floor(Math.random() * 35);
+        guard++;
+        if (vals.every(v => Math.abs(v - candidate) >= 2)) vals.push(candidate);
+      }
+      while (vals.length < n) vals.push(b + Math.floor(Math.random() * 35));
+      return vals.sort((a, b) => a - b);
+    };
+    function pickOppScorer(type) {
+      if (type === 'essai') {
+        const isBack = Math.random() < 0.7;
+        const pool = isBack ? (oppRoster || []).slice(8, 15) : (oppRoster || []).slice(0, 8);
+        const valid = pool.filter(p => p && p[0]);
+        if (!valid.length) return null;
+        return valid[Math.floor(Math.random() * valid.length)][0];
+      }
+      return (oppRoster || [])[9]?.[0] || null;
+    }
+    const [o1, o2] = cut(oppShape);
+    const oM1 = mins(o1.length, 2),
+      oM2 = mins(o2.length, 42);
+    const oppEvents = [...o1.map((e, i) => ({ ...e, min: oM1[i] })), ...o2.map((e, i) => ({ ...e, min: oM2[i] }))].sort((a, b) => a.min - b.min).flatMap(e => {
+      if (e.type === 'essai_transfo') {
+        return [{ team: 'opp', type: 'essai', pts: 5, scorer: pickOppScorer('essai'), min: e.min, phase: 0 }, { team: 'opp', type: 'transfo', pts: 2, scorer: pickOppScorer('transfo'), min: e.min, phase: 1, quick: true }];
+      }
+      return [{ team: 'opp', type: e.type, pts: e.pts, scorer: pickOppScorer(e.type), min: e.min, phase: 0 }];
+    });
+    const [m1, m2] = cut(myShape);
+    const mM1 = mins(m1.length, 2),
+      mM2 = mins(m2.length, 42);
+    const myEvents = [...m1.map((e, i) => ({ team: 'my', live: true, min: mM1[i], phase: -1 })), ...m2.map((e, i) => ({ team: 'my', live: true, min: mM2[i], phase: -1 }))];
+    return [...oppEvents, ...myEvents].sort((a, b) => a.min - b.min || a.phase - b.phase);
+  }
+
+  // Déroule la timeline pas à pas : événements adverses auto-commités,
+  // événements "my" en pause tant que le joueur n'a pas tranché.
+  function runLiveAnimation(timeline, setAnim, rates, onAllResolved) {
+    let idx = 0;
+    let runningMy = 0,
+      runningOpp = 0;
+    let halfInserted = false;
+    function commitEvents(evs, isMine, doHalf) {
+      setAnim(prev => {
+        if (!prev) return prev;
+        let events = prev.visibleEvents;
+        if (doHalf) events = [...events, { type: '__half__', rMy: runningMy, rOpp: runningOpp }];
+        evs.forEach(e => {
+          if (isMine) runningMy += e.pts;else runningOpp += e.pts;
+          events = [...events, { ...e, team: isMine ? 'my' : 'opp', rMy: runningMy, rOpp: runningOpp }];
+        });
+        return { ...prev, visibleEvents: events, myScore: runningMy, oppScore: runningOpp, pendingChoice: null, onChoice: null };
+      });
+    }
+    function advance() {
+      if (idx >= timeline.length) {
+        setTimeout(() => onAllResolved(runningMy, runningOpp), 900);
+        return;
+      }
+      const e = timeline[idx];
+      const doHalf = !halfInserted && e.min >= 40;
+      if (doHalf) halfInserted = true;
+      if (e.team === 'my') {
+        const flavor = LIVE_FLAVORS[Math.floor(Math.random() * LIVE_FLAVORS.length)];
+        const tryRate = flavor.category === 'avant' ? rates.packTryRate : rates.backsTryRate;
+        const onChoice = choice => {
+          const evs = resolveLiveMoment(choice, rates.kickRate, tryRate, flavor.safeKind, flavor.penaltyTry).map((ev, i) => ({
+            ...ev,
+            min: e.min + i,
+            quick: i > 0,
+            scorer: (ev.type === 'essai' || ev.type === 'essai_penalite') ? (ev.noScorer ? null : pickMyLiveScorer(flavor.category, flavor.fixedPos, flavor.scorerPool)) : slots[9]?.player?.nom || 'Le buteur'
+          }));
+          const primary = evs[0];
+          const label = primary.type === 'essai_penalite' ? 'Essai de pénalité' : primary.type === 'essai' ? 'Essai' : primary.type === 'drop' ? 'Drop' : 'Pénalité';
+          const flash = primary.missed ? {
+            success: false,
+            text: choice === 'safe' ? 'Échec au but' : 'La défense récupère le ballon'
+          } : {
+            success: true,
+            text: label + ' !',
+            scorer: primary.scorer
+          };
+          setAnim(prev => prev ? { ...prev, pendingChoice: null, onChoice: null, resultFlash: flash } : prev);
+          setTimeout(() => {
+            idx++;
+            commitEvents(evs, true, false);
+            setAnim(prev => prev ? { ...prev, resultFlash: null } : prev);
+            setTimeout(advance, 500);
+          }, 1100);
+        };
+        setAnim(prev => {
+          if (!prev) return prev;
+          let events = prev.visibleEvents;
+          if (doHalf) events = [...events, { type: '__half__', rMy: runningMy, rOpp: runningOpp }];
+          return { ...prev, visibleEvents: events, pendingChoice: { flavor, kickRate: rates.kickRate, tryRate, min: e.min }, onChoice };
+        });
+        return;
+      }
+      idx++;
+      commitEvents([{ type: e.type, pts: e.pts, scorer: e.scorer, min: e.min }], false, doHalf);
+      setTimeout(advance, e.quick ? 150 : 420);
+    }
+    advance();
+  }
+
+  // Estime, pour CE match précis (mêmes taux pack/3-4/buteur), combien un temps
+  // fort rapporte en moyenne une fois vraiment résolu en live — sert à corriger
+  // l'écart entre le score cible (calculé sans aucun risque) et ce que le
+  // système vivant produit réellement une fois le hasard appliqué.
+  function estimateDegradation(rates, n = 200) {
+    let total = 0;
+    for (let i = 0; i < n; i++) {
+      const flavor = LIVE_FLAVORS[Math.floor(Math.random() * LIVE_FLAVORS.length)];
+      const tryRate = flavor.category === 'avant' ? rates.packTryRate : rates.backsTryRate;
+      const evSafe = rates.kickRate * 3;
+      const evRisk = tryRate * (flavor.penaltyTry ? 7 : 5);
+      const choice = evRisk >= evSafe ? 'risk' : 'safe';
+      total += resolveLiveMoment(choice, rates.kickRate, tryRate, flavor.safeKind, flavor.penaltyTry).reduce((s, e) => s + e.pts, 0);
+    }
+    return total / n;
+  }
+
+  // Recalibre le score cible AVANT de le découper en temps forts, pour que le
+  // total réellement obtenu après résolution vivante retombe sur les chances
+  // annoncées au coup d'envoi (taux d'équipe vs taux d'équipe) — sans ça, seul
+  // mon camp porte le risque, l'adversaire encaisse toujours son total exact.
+  function inflateTarget(myTarget, rates) {
+    const baseCount = decomposeScore(myTarget).length;
+    if (baseCount === 0) return myTarget;
+    const avgAssigned = myTarget / baseCount;
+    const avgRealized = estimateDegradation(rates);
+    if (avgRealized <= 0) return myTarget;
+    const factor = Math.max(0.5, Math.min(3, avgAssigned / avgRealized));
+    return Math.round(myTarget * factor);
+  }
+
+  // Mode Fast : résout tous mes temps forts instantanément (choix rationnel
+  // à plus forte espérance), sans animation ni pause.
+  function resolveFastLiveScore(myTarget, rates) {
+    const count = decomposeScore(myTarget).length;
+    let total = 0;
+    for (let i = 0; i < count; i++) {
+      const flavor = LIVE_FLAVORS[Math.floor(Math.random() * LIVE_FLAVORS.length)];
+      const tryRate = flavor.category === 'avant' ? rates.packTryRate : rates.backsTryRate;
+      const evSafe = rates.kickRate * 3;
+      const evRisk = tryRate * (flavor.penaltyTry ? 7 : 5);
+      const choice = evRisk >= evSafe ? 'risk' : 'safe';
+      total += resolveLiveMoment(choice, rates.kickRate, tryRate, flavor.safeKind, flavor.penaltyTry).reduce((s, e) => s + e.pts, 0);
+    }
+    return total;
+  }
+
   function playMatch() {
     const oppAvg = TEAM_AVG[currentOpponent] + (PHASE_BONUS[simPhase] || 0);
     const result = simulateMatch(avg, oppAvg);
@@ -2402,85 +2675,44 @@ function App() {
       setMatchAnim(null);
     }
 
-    // Résolution du choix money-time (bouton en LIVE, ou auto-résolu en FAST)
-    function handleMoneyTimeChoice(mt, choice) {
-      const {
-        points,
-        events,
-        message,
-        success,
-        flipped
-      } = resolveMoneyTime(mt, choice);
-      const finalMy = result.myScore + points;
-      const finalOpp = result.oppScore;
-      const finalWin = finalMy > finalOpp;
-      if (simMode) {
-        setMatchAnim(prev => prev ? {
-          ...prev,
-          visibleEvents: [...prev.visibleEvents, ...events],
-          myScore: (prev.myScore || 0) + points,
-          myFinal: finalMy,
-          oppFinal: finalOpp,
-          win: finalWin,
-          moneyTime: null,
-          onChoice: null,
-          moneyTimeResult: {
-            message,
-            success,
-            flipped
-          }
-        } : prev);
-        setTimeout(() => finalizeMatch(finalMy, finalOpp, finalWin), 2400);
-      } else {
-        finalizeMatch(finalMy, finalOpp, finalWin);
-      }
-    }
+    const rates = computeLiveRates(TEAMS[currentOpponent]?.joueurs);
+    const inflatedMy = inflateTarget(result.myScore, rates);
+
     if (!simMode) {
-      const mt = buildMoneyTime(result.myScore, result.oppScore, currentOpponent);
-      if (!mt) {
-        finalizeMatch(result.myScore, result.oppScore, result.win);
-        return;
-      }
-      const choice = mt.deficit === 1 || mt.deficit === 2 ? 'safe' : mt.tryRate > 0.5 ? 'risk' : 'safe';
-      handleMoneyTimeChoice(mt, choice);
+      const finalMy = resolveFastLiveScore(inflatedMy, rates);
+      finalizeMatch(finalMy, result.oppScore, finalMy > result.oppScore);
       return;
     }
     const poolIdx2 = matchLog.filter(m => m.stage.startsWith('Poule')).length;
     const animLbl = simPhase === 'pool' ? ['1er match de poule', '2ème match de poule', '3ème match de poule'][poolIdx2] || 'Match de poule' : simPhase === 'knockout-quart' ? 'Quart de finale' : simPhase === 'knockout-demi' ? 'Demi-finale' : 'Finale';
-    const mEvts = generateMatchEvents(result.myScore, result.oppScore, slots, TEAMS[currentOpponent]?.joueurs);
-    const allEvts = [].concat(mEvts.first, [{
-      type: '__half__',
-      halfMy: mEvts.halfMy,
-      halfOpp: mEvts.halfOpp
-    }], mEvts.second);
+    const timeline = buildLiveTimeline(inflatedMy, result.oppScore, TEAMS[currentOpponent]?.joueurs);
     setMatchAnim({
-      allEvents: allEvts,
+      allEvents: timeline,
       visibleEvents: [],
       myScore: 0,
       oppScore: 0,
-      myFinal: result.myScore,
+      myFinal: null,
       oppFinal: result.oppScore,
-      win: result.win,
+      win: null,
       oppName: TEAMS[currentOpponent]?.nom,
+      oppYear: TEAMS[currentOpponent]?.annee,
       stageLabel: animLbl,
       isLegend: false,
-      moneyTime: null,
+      pendingChoice: null,
       onChoice: null,
-      moneyTimeResult: null
+      resultFlash: null
     });
-    function onAnimationDone() {
-      const mt = buildMoneyTime(result.myScore, result.oppScore, currentOpponent);
-      if (mt) {
-        setMatchAnim(prev => prev ? {
-          ...prev,
-          moneyTime: mt,
-          onChoice: choice => handleMoneyTimeChoice(mt, choice)
-        } : prev);
-      } else {
-        finalizeMatch(result.myScore, result.oppScore, result.win);
-      }
+    function onAllResolved(finalMy, finalOpp) {
+      const finalWin = finalMy > finalOpp;
+      setMatchAnim(prev => prev ? {
+        ...prev,
+        myFinal: finalMy,
+        oppFinal: finalOpp,
+        win: finalWin
+      } : prev);
+      setTimeout(() => finalizeMatch(finalMy, finalOpp, finalWin), 1000);
     }
-    runAnimation(allEvts, setMatchAnim, onAnimationDone);
+    runLiveAnimation(timeline, setMatchAnim, rates, onAllResolved);
   }
   const TOURNAMENT_LABEL = {
     poule: 'Sorti en poule',
@@ -2558,82 +2790,41 @@ function App() {
       }
       setTimeout(() => setMatchAnim(null), 200);
     }
-    function handleMoneyTimeChoice(mt, choice) {
-      const {
-        points,
-        events,
-        message,
-        success,
-        flipped
-      } = resolveMoneyTime(mt, choice);
-      const finalMy = result.myScore + points;
-      const finalOpp = result.oppScore;
-      const finalWin = finalMy > finalOpp;
-      if (simMode) {
-        setMatchAnim(prev => prev ? {
-          ...prev,
-          visibleEvents: [...prev.visibleEvents, ...events],
-          myScore: (prev.myScore || 0) + points,
-          myFinal: finalMy,
-          oppFinal: finalOpp,
-          win: finalWin,
-          moneyTime: null,
-          onChoice: null,
-          moneyTimeResult: {
-            message,
-            success,
-            flipped
-          }
-        } : prev);
-        setTimeout(() => finalizeLegend(finalMy, finalOpp, finalWin), 2400);
-      } else {
-        finalizeLegend(finalMy, finalOpp, finalWin);
-      }
-    }
+    const rates = computeLiveRates(TEAMS[oppKey]?.joueurs);
+    const inflatedMy = inflateTarget(result.myScore, rates);
     if (!simMode) {
-      const mt = buildMoneyTime(result.myScore, result.oppScore, oppKey);
-      if (!mt) {
-        finalizeLegend(result.myScore, result.oppScore, result.win);
-        return;
-      }
-      const choice = mt.deficit === 1 || mt.deficit === 2 ? 'safe' : mt.tryRate > 0.5 ? 'risk' : 'safe';
-      handleMoneyTimeChoice(mt, choice);
+      const finalMy = resolveFastLiveScore(inflatedMy, rates);
+      finalizeLegend(finalMy, result.oppScore, finalMy > result.oppScore);
       return;
     }
-    const lEvts = generateMatchEvents(result.myScore, result.oppScore, slots, TEAMS[oppKey]?.joueurs);
-    const allLEvts = [...lEvts.first, {
-      type: '__half__',
-      halfMy: lEvts.halfMy,
-      halfOpp: lEvts.halfOpp
-    }, ...lEvts.second];
+    const timeline = buildLiveTimeline(inflatedMy, result.oppScore, TEAMS[oppKey]?.joueurs);
     setMatchAnim({
-      allEvents: allLEvts,
+      allEvents: timeline,
       visibleEvents: [],
       myScore: 0,
       oppScore: 0,
-      myFinal: result.myScore,
+      myFinal: null,
       oppFinal: result.oppScore,
-      win: result.win,
+      win: null,
       oppName: TEAMS[oppKey]?.nom,
+      oppYear: TEAMS[oppKey]?.annee,
       stageLabel: `Légende ${legendIndex + 1} / 10`,
       isLegend: true,
-      moneyTime: null,
+      pendingChoice: null,
       onChoice: null,
-      moneyTimeResult: null
+      resultFlash: null
     });
-    function onAnimationDone() {
-      const mt = buildMoneyTime(result.myScore, result.oppScore, oppKey);
-      if (mt) {
-        setMatchAnim(prev => prev ? {
-          ...prev,
-          moneyTime: mt,
-          onChoice: choice => handleMoneyTimeChoice(mt, choice)
-        } : prev);
-      } else {
-        finalizeLegend(result.myScore, result.oppScore, result.win);
-      }
+    function onAllResolved(finalMy, finalOpp) {
+      const finalWin = finalMy > finalOpp;
+      setMatchAnim(prev => prev ? {
+        ...prev,
+        myFinal: finalMy,
+        oppFinal: finalOpp,
+        win: finalWin
+      } : prev);
+      setTimeout(() => finalizeLegend(finalMy, finalOpp, finalWin), 1000);
     }
-    runAnimation(allLEvts, setMatchAnim, onAnimationDone);
+    runLiveAnimation(timeline, setMatchAnim, rates, onAllResolved);
   }
   function poulesState() {
     const poolMatches = matchLog.filter(m => m.stage.startsWith('Poule'));
@@ -2858,7 +3049,8 @@ function App() {
     'essai': 'Essai',
     'transfo': 'Transformation',
     'pénalité': 'Pénalité',
-    'drop': 'Drop'
+    'drop': 'Drop',
+    'essai_penalite': 'Essai de pénalité'
   };
   const animOverlay = matchAnim ? (() => {
     const {
@@ -2868,11 +3060,12 @@ function App() {
       oppFinal,
       win,
       oppName,
+      oppYear,
       stageLabel,
       visibleEvents = [],
       allEvents = []
     } = matchAnim;
-    const isDone = visibleEvents.length >= allEvents.length;
+    const isDone = win !== null;
     const shownMy = isDone ? myFinal : myScore;
     const shownOpp = isDone ? oppFinal : oppScore;
     const myLeading = shownMy >= shownOpp;
@@ -2968,13 +3161,20 @@ function App() {
         letterSpacing: '.1em',
         textTransform: 'uppercase',
         color: 'rgba(244,239,226,0.4)',
-        marginBottom: 6,
+        marginBottom: 2,
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
         maxWidth: 100
       }
-    }, oppName), /*#__PURE__*/React.createElement("div", {
+    }, oppName), oppYear && /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: BODY,
+        fontSize: 9,
+        color: 'rgba(244,239,226,0.28)',
+        marginBottom: 6
+      }
+    }, oppYear), /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: SERIF,
         fontSize: 70,
@@ -3058,7 +3258,7 @@ function App() {
           height: 7,
           borderRadius: '50%',
           flexShrink: 0,
-          background: isMy ? '#C9A85F' : 'rgba(244,239,226,0.55)',
+          background: e.missed ? 'rgba(244,239,226,0.25)' : isMy ? '#C9A85F' : 'rgba(244,239,226,0.55)',
           opacity: 1
         }
       }), /*#__PURE__*/React.createElement("span", {
@@ -3066,9 +3266,9 @@ function App() {
           fontFamily: BODY,
           fontSize: 11,
           flex: 1,
-          color: isMy ? '#C9A85F' : 'rgba(244,239,226,0.6)'
+          color: e.missed ? 'rgba(244,239,226,0.35)' : isMy ? '#C9A85F' : 'rgba(244,239,226,0.6)'
         }
-      }, SL[e.type] || e.type, e.scorer ? ` — ${e.scorer}` : ''), /*#__PURE__*/React.createElement("span", {
+      }, SL[e.type] || e.type, e.scorer ? ` — ${e.scorer}` : '', e.missed ? ' (manqué)' : ''), /*#__PURE__*/React.createElement("span", {
         style: {
           fontFamily: SERIF,
           fontSize: 13,
@@ -3076,7 +3276,7 @@ function App() {
           color: 'rgba(244,239,226,0.6)'
         }
       }, e.rMy, "–", e.rOpp)));
-    })), scoreEvts.length === 0 && !matchAnim.moneyTime && !matchAnim.moneyTimeResult && /*#__PURE__*/React.createElement("div", {
+    })), scoreEvts.length === 0 && !matchAnim.moneyTime && !matchAnim.moneyTimeResult && !matchAnim.pendingChoice && !matchAnim.resultFlash && /*#__PURE__*/React.createElement("div", {
       style: {
         display: 'flex',
         gap: 8,
@@ -3217,6 +3417,138 @@ function App() {
           color: tone
         }
       }, r.message));
+    })(), matchAnim.resultFlash && (() => {
+      const rf = matchAnim.resultFlash;
+      return /*#__PURE__*/React.createElement("div", {
+        style: {
+          marginTop: 20,
+          padding: '28px 16px',
+          textAlign: 'center',
+          background: rf.success ? 'linear-gradient(160deg, rgba(111,207,151,0.16), rgba(111,207,151,0.04))' : 'linear-gradient(160deg, rgba(224,100,92,0.16), rgba(224,100,92,0.04))',
+          border: rf.success ? '1px solid rgba(111,207,151,0.5)' : '1px solid rgba(224,100,92,0.5)',
+          borderRadius: 12,
+          boxShadow: '0 8px 24px rgba(0,0,0,0.35)'
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontSize: 34,
+          marginBottom: 8,
+          color: rf.success ? '#6FCF97' : '#E0645C'
+        }
+      }, rf.success ? '✓' : '✗'), /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontFamily: SERIF,
+          fontWeight: 700,
+          fontSize: 20,
+          color: rf.success ? '#6FCF97' : '#E0645C'
+        }
+      }, rf.text), rf.scorer && /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontFamily: BODY,
+          fontSize: 13,
+          color: 'rgba(244,239,226,0.7)',
+          marginTop: 4
+        }
+      }, rf.scorer));
+    })(), matchAnim.pendingChoice && (() => {
+      const pc = matchAnim.pendingChoice;
+      return /*#__PURE__*/React.createElement("div", {
+        style: {
+          marginTop: 20,
+          padding: '20px 16px',
+          background: 'linear-gradient(160deg, rgba(201,168,95,0.1), rgba(201,168,95,0.03))',
+          border: '1px solid rgba(201,168,95,0.4)',
+          borderRadius: 12,
+          boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontFamily: BODY,
+          fontSize: 9,
+          letterSpacing: '.22em',
+          textTransform: 'uppercase',
+          color: '#C9A85F',
+          marginBottom: 4,
+          textAlign: 'center',
+          opacity: 0.75
+        }
+      }, `Temps fort · ${pc.min}ᵉ`), /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontFamily: SERIF,
+          fontWeight: 700,
+          fontSize: 17,
+          color: '#F4EFE2',
+          textAlign: 'center',
+          marginBottom: 18
+        }
+      }, pc.flavor.header), /*#__PURE__*/React.createElement("div", {
+        style: {
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 9
+        }
+      }, /*#__PURE__*/React.createElement("button", {
+        onClick: () => matchAnim.onChoice && matchAnim.onChoice('safe'),
+        style: {
+          padding: '14px 16px',
+          borderRadius: 9,
+          border: '1px solid rgba(201,168,95,0.5)',
+          background: 'rgba(201,168,95,0.1)',
+          cursor: 'pointer',
+          textAlign: 'left'
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontFamily: SERIF,
+          fontWeight: 700,
+          fontSize: 15,
+          color: '#F4EFE2',
+          marginBottom: 3
+        }
+      }, pc.flavor.safe, " ", /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontFamily: BODY,
+          fontWeight: 600,
+          fontSize: 11,
+          color: '#C9A85F'
+        }
+      }, "· ", Math.round(pc.kickRate * 100), "%")), /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontFamily: BODY,
+          fontSize: 11,
+          color: 'rgba(244,239,226,0.6)'
+        }
+      }, "Prudence")), /*#__PURE__*/React.createElement("button", {
+        onClick: () => matchAnim.onChoice && matchAnim.onChoice('risk'),
+        style: {
+          padding: '14px 16px',
+          borderRadius: 9,
+          border: '1px solid rgba(123,168,196,0.5)',
+          background: 'rgba(123,168,196,0.1)',
+          cursor: 'pointer',
+          textAlign: 'left'
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontFamily: SERIF,
+          fontWeight: 700,
+          fontSize: 15,
+          color: '#F4EFE2'
+        }
+      }, pc.flavor.risk, " ", /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontFamily: BODY,
+          fontWeight: 600,
+          fontSize: 11,
+          color: '#7BA8C4'
+        }
+      }, "· ", Math.round(pc.tryRate * 100), "%")), /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontFamily: BODY,
+          fontSize: 11,
+          color: 'rgba(244,239,226,0.6)'
+        }
+      }, "Audace"))));
     })())));
   })() : null;
   return /*#__PURE__*/React.createElement("div", {
@@ -3780,7 +4112,58 @@ function App() {
       marginBottom: 16,
       lineHeight: 1.5
     }
-  }, "+1 pour lui · +0.5 pour ses coéquipiers de même nation"), /*#__PURE__*/React.createElement("div", {
+  }, "+1 pour lui · +0.5 pour ses coéquipiers de même nation"), (() => {
+    const nationCounts = {};
+    slots.forEach(s => {
+      if (s.player && s.team) {
+        const n = nationOf(s.team);
+        nationCounts[n] = (nationCounts[n] || 0) + 1;
+      }
+    });
+    const entries = Object.entries(nationCounts).sort((a, b) => b[1] - a[1]);
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 6,
+        marginBottom: 16
+      }
+    }, entries.map(([nation, count]) => /*#__PURE__*/React.createElement("div", {
+      key: nation,
+      style: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 5,
+        padding: '4px 9px 4px 6px',
+        borderRadius: 20,
+        background: 'rgba(22,48,31,0.05)',
+        border: '1px solid rgba(22,48,31,0.08)'
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        width: 12,
+        height: 12,
+        borderRadius: '50%',
+        flexShrink: 0,
+        background: NATION_GRADIENT[nation] || '#888',
+        boxShadow: '0 0 0 1px rgba(0,0,0,0.15)'
+      }
+    }), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontFamily: BODY,
+        fontSize: 10,
+        letterSpacing: '.06em',
+        color: 'rgba(22,48,31,0.6)'
+      }
+    }, nation), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontFamily: SERIF,
+        fontSize: 12,
+        fontWeight: 700,
+        color: C.ink
+      }
+    }, count))));
+  })(), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       flexDirection: 'column',
